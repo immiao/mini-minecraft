@@ -7,4 +7,4 @@
 
 * There're 3 other branches, corresponding to the three parts of the week1 milestone. Please use `git clone -b <your-branch-name> <remote-repo>` to clone your branch to your machine.
 
-* Please do not use `git clone <remote-repo>` directly. It clones the `master` branch by default.
+* **Please do not use `git clone <remote-repo>` directly.** It clones the `master` branch by default.
