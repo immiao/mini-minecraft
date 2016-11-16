@@ -9,4 +9,4 @@
 
 * `git clone <remote-repo>` directly also works. But it clones the `master` branch by default. **Use `git checkout <your-branch-name>` to switch your branch from `master` to `<your-branch-name>`.**
 
-* I strongly suggest each one adds a prefix before the name of the new class. For example, if I create a class named `Shpere`, I should modify its name to `KxShpere` or `PcdTerrainSphere` (`Pcd` is the abbreviation of "procedural"). In a word, this is a group project. Please write your code beautifully and it plays a key role in debugging.
+* push用这个指令，以我的为例：git push origin dev-procedural-terrain:dev-procedural-terrain，第一个dev-procedural-terrain指的是本地的dev-procedural-terrain，第二个指的是远程仓库的dev-procedural-terrain。不要直接用git push，会把所有的分支都push上去。
