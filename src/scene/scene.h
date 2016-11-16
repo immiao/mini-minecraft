@@ -1,13 +1,21 @@
 #pragma once
 #include <QList>
 #include <camera.h>
+#include <map>
+#include <tuple>
+#include "block.h"
+
+typedef std::tuple<int, int, int> tuple;
 
 class Scene
 {
 public:
     Scene();
-    QList<QList<QList<bool>>> objects;//A 3D list of the geometry in the world. Currently, it just lists whether or not a given cell contains a block.
-    void CreateTestScene();
+    ~Scene();
 
-    glm::ivec3 dimensions;
+    void Create();
+    void clear();
+
+    glm::ivec3 mDimensions;
+    std::map<tuple, Block*> mSceneMap;
 };

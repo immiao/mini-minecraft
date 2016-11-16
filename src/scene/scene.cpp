@@ -2,35 +2,47 @@
 
 #include <scene/cube.h>
 
-Scene::Scene() : dimensions(64, 64, 64)
+Scene::Scene() : mDimensions(8, 8, 8)
 {
+
 }
 
-void Scene::CreateTestScene()
+Scene::~Scene()
 {
-    for(int x = 0; x < dimensions.x; x++)
-    {
-        QList<QList<bool>> Ys;
-        for(int y = 0; y < dimensions.y; y++)
-        {
-            QList<bool> Zs;
-            for(int z = 0; z < dimensions.z; z++)
-            {
-                if(y == dimensions.y/2)
-                {
-                    Zs.push_back(true);
-                }
-                else
-                {
-                    Zs.push_back(false);
-                }
-            }
-            Ys.push_back(Zs);
-        }
-        objects.push_back(Ys);
-    }
-    objects[0][dimensions.y/2+2][0] = true;
-    objects[dimensions.x-1][dimensions.y/2+2][0] = true;
-    objects[0][dimensions.y/2+2][dimensions.z-1] = true;
-    objects[dimensions.x-1][dimensions.y/2+2][dimensions.z-1] = true;
+    clear();
 }
+
+void Scene::clear()
+{
+    for (int i = 0; i < mDimensions.x; i++)
+    {
+        for (int j = 0; j < mDimensions.y; j++)
+        {
+            for (int k = 0; k < mDimensions.z; k++)
+            {
+                tuple tempTuple(i, j, k);
+                std::map<tuple, Block*>::iterator iter = mSceneMap.find(tempTuple);
+                if (iter != mSceneMap.end())
+                    delete iter->second;
+            }
+        }
+    }
+}
+
+void Scene::Create()
+{
+    for (int i = 0; i < mDimensions.x; i++)
+    {
+        for (int j = 0; j < mDimensions.y; j++)
+        {
+            for (int k = 0; k < mDimensions.z; k++)
+            {
+                Block* pBlock = new Block(glm::ivec3(i, j, k));
+                tuple tempTuple(i, j, k);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+            }
+        }
+    }
+}
+
+

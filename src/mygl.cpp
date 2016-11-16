@@ -68,7 +68,7 @@ void MyGL::initializeGL()
 //    vao.bind();
     glBindVertexArray(vao);
 
-    scene.CreateTestScene();
+    scene.Create();
 }
 
 void MyGL::resizeGL(int w, int h)
@@ -76,8 +76,8 @@ void MyGL::resizeGL(int w, int h)
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
 //    gl_camera = Camera(w, h);
-    gl_camera = Camera(w, h, glm::vec3(scene.dimensions.x/2, scene.dimensions.y/2 + 2, scene.dimensions.z/2),
-                       glm::vec3(scene.dimensions.x/2, scene.dimensions.y/2+2, scene.dimensions.z/2+1), glm::vec3(0,1,0));
+    gl_camera = Camera(w, h, glm::vec3(scene.mDimensions.x/2, scene.mDimensions.y/2 + 2, scene.mDimensions.z/2),
+                       glm::vec3(scene.mDimensions.x/2, scene.mDimensions.y/2+2, scene.mDimensions.z/2+1), glm::vec3(0,1,0));
     glm::mat4 viewproj = gl_camera.getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
@@ -104,17 +104,16 @@ void MyGL::paintGL()
 
 void MyGL::GLDrawScene()
 {
-    for(int x = 0; x < scene.objects.size(); x++)
+    for(int x = 0; x < scene.mDimensions.x; x++)
     {
-        QList<QList<bool>> Xs = scene.objects[x];
-        for(int y = 0; y < Xs.size(); y++)
+        for(int y = 0; y < scene.mDimensions.y; y++)
         {
-            QList<bool> Ys = Xs[x];
-            for(int z = 0; z < Ys.size(); z++)
+            for(int z = 0; z < scene.mDimensions.z; z++)
             {
-                if(Ys[z])
+                tuple tempTuple(x, y, z);
+                if (scene.mSceneMap.find(tempTuple) != scene.mSceneMap.end())
                 {
-                    prog_lambert.setModelMatrix(glm::translate(glm::mat4(), glm::vec3(y, x, z)));
+                    prog_lambert.setModelMatrix(glm::translate(glm::mat4(), glm::vec3(x, y, z)));
                     prog_lambert.draw(geom_cube);
                 }
             }
