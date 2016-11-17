@@ -68,7 +68,7 @@ void MyGL::initializeGL()
 //    vao.bind();
     glBindVertexArray(vao);
 
-    scene.CreateTestScene();
+    scene.Create();
 }
 
 void MyGL::resizeGL(int w, int h)
@@ -76,8 +76,8 @@ void MyGL::resizeGL(int w, int h)
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
 //    gl_camera = Camera(w, h);
-    gl_camera = Camera(w, h, glm::vec3(scene.dimensions.x/2, scene.dimensions.y/2 + 2, scene.dimensions.z/2),
-                       glm::vec3(scene.dimensions.x/2, scene.dimensions.y/2+2, scene.dimensions.z/2+1), glm::vec3(0,1,0));
+    gl_camera = Camera(w, h, glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 2, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
+                       glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+2, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1), glm::vec3(0,1,0));
     glm::mat4 viewproj = gl_camera.getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
@@ -104,21 +104,14 @@ void MyGL::paintGL()
 
 void MyGL::GLDrawScene()
 {
-    for(int x = 0; x < scene.objects.size(); x++)
+    std::map<tuple, Block*>::iterator iter;
+    for (iter = scene.mSceneMap.begin(); iter != scene.mSceneMap.end(); iter++)
     {
-        QList<QList<bool>> Xs = scene.objects[x];
-        for(int y = 0; y < Xs.size(); y++)
-        {
-            QList<bool> Ys = Xs[x];
-            for(int z = 0; z < Ys.size(); z++)
-            {
-                if(Ys[z])
-                {
-                    prog_lambert.setModelMatrix(glm::translate(glm::mat4(), glm::vec3(y, x, z)));
-                    prog_lambert.draw(geom_cube);
-                }
-            }
-        }
+        // iter->first is a tuple
+        // std::get<index>(tuple) can get the elements in the tuple
+        glm::vec3 trans(std::get<0>(iter->first), std::get<1>(iter->first), std::get<2>(iter->first));
+        prog_lambert.setModelMatrix(glm::translate(glm::mat4(), trans));
+        prog_lambert.draw(geom_cube);
     }
 }
 
@@ -166,6 +159,28 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     }
     gl_camera.RecomputeAttributes();
     update();  // Calls paintGL, among other things
+
+    //printf("%f %f %d %f\n", gl_camera.ref.x, gl_camera.ref.z, scene.mMinXYZ.z, fabs(gl_camera.ref.z - scene.mMinXYZ.z));
+    if (fabs(gl_camera.ref.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
+    {
+        //printf("0\n");
+        scene.GenerateBlocks(0);
+    }
+    else if (fabs(gl_camera.ref.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
+    {
+        //printf("1\n");
+        scene.GenerateBlocks(1);
+    }
+    else if (fabs(gl_camera.ref.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
+    {
+        //printf("2\n");
+        scene.GenerateBlocks(2);
+    }
+    else if (fabs(gl_camera.ref.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
+    {
+        //printf("3\n");
+        scene.GenerateBlocks(3);
+    }
 }
 
 void MyGL::timerUpdate()
