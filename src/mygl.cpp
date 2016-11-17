@@ -159,6 +159,28 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     }
     gl_camera.RecomputeAttributes();
     update();  // Calls paintGL, among other things
+
+    //printf("%f %f %d %f\n", gl_camera.ref.x, gl_camera.ref.z, scene.mMinXYZ.z, fabs(gl_camera.ref.z - scene.mMinXYZ.z));
+    if (fabs(gl_camera.ref.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
+    {
+        //printf("0\n");
+        scene.GenerateBlocks(0);
+    }
+    else if (fabs(gl_camera.ref.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
+    {
+        //printf("1\n");
+        scene.GenerateBlocks(1);
+    }
+    else if (fabs(gl_camera.ref.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
+    {
+        //printf("2\n");
+        scene.GenerateBlocks(2);
+    }
+    else if (fabs(gl_camera.ref.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
+    {
+        //printf("3\n");
+        scene.GenerateBlocks(3);
+    }
 }
 
 void MyGL::timerUpdate()
