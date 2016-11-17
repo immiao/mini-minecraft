@@ -76,8 +76,8 @@ void MyGL::resizeGL(int w, int h)
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
 //    gl_camera = Camera(w, h);
-    gl_camera = Camera(w, h, glm::vec3(scene.mDimensions.x/2, scene.mDimensions.y/2 + 2, scene.mDimensions.z/2),
-                       glm::vec3(scene.mDimensions.x/2, scene.mDimensions.y/2+2, scene.mDimensions.z/2+1), glm::vec3(0,1,0));
+    gl_camera = Camera(w, h, glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 2, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
+                       glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+2, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1), glm::vec3(0,1,0));
     glm::mat4 viewproj = gl_camera.getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
@@ -104,20 +104,14 @@ void MyGL::paintGL()
 
 void MyGL::GLDrawScene()
 {
-    for(int x = 0; x < scene.mDimensions.x; x++)
+    std::map<tuple, Block*>::iterator iter;
+    for (iter = scene.mSceneMap.begin(); iter != scene.mSceneMap.end(); iter++)
     {
-        for(int y = 0; y < scene.mDimensions.y; y++)
-        {
-            for(int z = 0; z < scene.mDimensions.z; z++)
-            {
-                tuple tempTuple(x, y, z);
-                if (scene.mSceneMap.find(tempTuple) != scene.mSceneMap.end())
-                {
-                    prog_lambert.setModelMatrix(glm::translate(glm::mat4(), glm::vec3(x, y, z)));
-                    prog_lambert.draw(geom_cube);
-                }
-            }
-        }
+        // iter->first is a tuple
+        // std::get<index>(tuple) can get the elements in the tuple
+        glm::vec3 trans(std::get<0>(iter->first), std::get<1>(iter->first), std::get<2>(iter->first));
+        prog_lambert.setModelMatrix(glm::translate(glm::mat4(), trans));
+        prog_lambert.draw(geom_cube);
     }
 }
 

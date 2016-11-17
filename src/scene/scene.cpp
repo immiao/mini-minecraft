@@ -2,7 +2,7 @@
 
 #include <scene/cube.h>
 
-Scene::Scene() : mDimensions(8, 8, 8)
+Scene::Scene() : mMinXYZ(0, -1, 0), mMaxXYZ(100, 8, 100), mPerlinNoise(1.0, 1.0, 10.0, 6)
 {
 
 }
@@ -14,31 +14,26 @@ Scene::~Scene()
 
 void Scene::clear()
 {
-    for (int i = 0; i < mDimensions.x; i++)
+    std::map<tuple, Block*>::iterator iter;
+    for (iter = mSceneMap.begin(); iter != mSceneMap.end(); iter++)
     {
-        for (int j = 0; j < mDimensions.y; j++)
-        {
-            for (int k = 0; k < mDimensions.z; k++)
-            {
-                tuple tempTuple(i, j, k);
-                std::map<tuple, Block*>::iterator iter = mSceneMap.find(tempTuple);
-                if (iter != mSceneMap.end())
-                    delete iter->second;
-            }
-        }
+        delete(iter->second);
     }
+    mSceneMap.clear();
 }
 
 void Scene::Create()
 {
-    for (int i = 0; i < mDimensions.x; i++)
+    for (int i = mMinXYZ.x; i < mMaxXYZ.x; i++)
     {
-        for (int j = 0; j < mDimensions.y; j++)
+        for (int j = mMinXYZ.z; j < mMaxXYZ.z; j++)
         {
-            for (int k = 0; k < mDimensions.z; k++)
+            int height = mPerlinNoise.GetHeight(i, j);
+            //printf("%d\n", height);
+            for (int k = mMinXYZ.y; k < height; k++)
             {
-                Block* pBlock = new Block(glm::ivec3(i, j, k));
-                tuple tempTuple(i, j, k);
+                Block* pBlock = new Block(glm::ivec3(i, k, j));
+                tuple tempTuple(i, k, j);
                 mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
             }
         }

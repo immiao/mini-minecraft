@@ -15,7 +15,8 @@ SOURCES += \
     $$PWD/scene/cube.cpp \
     $$PWD/scene/scene.cpp \
     $$PWD/scene/transform.cpp \
-    $$PWD/scene/block.cpp
+    $$PWD/scene/block.cpp \
+    $$PWD/perlinnoise.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -30,4 +31,5 @@ HEADERS += \
     $$PWD/scene/cube.h \
     $$PWD/scene/scene.h \
     $$PWD/scene/transform.h \
-    $$PWD/scene/block.h
+    $$PWD/scene/block.h \
+    $$PWD/perlinnoise.h
