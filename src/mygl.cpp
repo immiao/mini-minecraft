@@ -9,7 +9,8 @@
 MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
       geom_cube(this),
-      prog_lambert(this), prog_flat(this),
+      prog_lambert(this), prog_flat(this), prog_new(this),
+      grid(this),
       gl_camera()
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -58,17 +59,20 @@ void MyGL::initializeGL()
     // Create and set up the flat lighting shader
     prog_flat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
 
+    prog_new.create(":/glsl/new.vert.glsl", ":/glsl/new.frag.glsl");
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
     // This makes your geometry render green.
     prog_lambert.setGeometryColor(glm::vec4(0,1,0,1));
-
+    prog_new.setGeometryColor(glm::vec4(0,1,0,1));
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
 //    vao.bind();
     glBindVertexArray(vao);
 
     scene.Create();
+    initializeGrid();
+
 }
 
 void MyGL::resizeGL(int w, int h)
@@ -84,7 +88,6 @@ void MyGL::resizeGL(int w, int h)
 
     prog_lambert.setViewProjMatrix(viewproj);
     prog_flat.setViewProjMatrix(viewproj);
-
     printGLErrorLog();
 }
 
@@ -98,8 +101,10 @@ void MyGL::paintGL()
 
     prog_flat.setViewProjMatrix(gl_camera.getViewProj());
     prog_lambert.setViewProjMatrix(gl_camera.getViewProj());
+    prog_new.setViewProjMatrix(gl_camera.getViewProj());
+    grid.render(prog_new);
 
-    GLDrawScene();
+    //GLDrawScene();
 }
 
 void MyGL::GLDrawScene()
@@ -115,6 +120,28 @@ void MyGL::GLDrawScene()
     }
 }
 
+//initialize the grid by the
+void MyGL::initializeGrid(){
+    int x0 = gl_camera.eye.x ,y0 = gl_camera.eye.y ,z0 = gl_camera.eye.z;
+    grid.start_pos = glm::vec3(x0 - 32 * 16, y0 - 32 * 16, z0 - 32 * 16);
+    memset(grid.cl, 0, sizeof grid.cl);
+    std::map<tuple, Block*>::iterator iter;
+    for (iter = scene.mSceneMap.begin(); iter != scene.mSceneMap.end(); iter++)
+    {
+        // iter->first is a tuple
+        // std::get<index>(tuple) can get the elements in the tuple
+        int x = std::get<0>(iter->first), y = std::get<1>(iter->first), z = std::get<2>(iter->first);
+//        std::cout<<x<<" "<<y<<" "<<z<<" "<<"\n";
+        if(x >= grid.start_pos[0] && x <= (grid.start_pos[0] + 64 * 16) &&
+                y >= grid.start_pos[1] && y <= (grid.start_pos[1] + 64 * 16) &&
+                z >= grid.start_pos[2] && z <= (grid.start_pos[2] + 64 * 16)){
+            grid.set(x,y,z,int(1));
+        }
+//        glm::vec3 trans(std::get<0>(iter->first), std::get<1>(iter->first), std::get<2>(iter->first));
+//        prog_lambert.setModelMatrix(glm::translate(glm::mat4(), trans));
+//        prog_lambert.draw(geom_cube);
+    }
+}
 
 void MyGL::keyPressEvent(QKeyEvent *e)
 {
@@ -165,21 +192,67 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     {
         //printf("0\n");
         scene.GenerateBlocks(0);
+        initializeGrid();
     }
     else if (fabs(gl_camera.ref.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
     {
         //printf("1\n");
         scene.GenerateBlocks(1);
+        initializeGrid();
+
     }
     else if (fabs(gl_camera.ref.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
     {
         //printf("2\n");
         scene.GenerateBlocks(2);
+        initializeGrid();
+
     }
     else if (fabs(gl_camera.ref.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
     {
         //printf("3\n");
         scene.GenerateBlocks(3);
+        initializeGrid();
+
+    }
+    //Test whether need to update the superchunk
+    if(gl_camera.eye.x - grid.start_pos[0] > 33 * 16){
+        // +x out of bounds
+        std::cout<<"0\n";
+        grid.MoveUpdate(0, scene.mSceneMap);
+        this->update();
+    }
+    else if(gl_camera.eye.x - grid.start_pos[0] < 32 * 16){
+        // -x out of bounds
+        std::cout<<"1\n";
+        grid.MoveUpdate(1, scene.mSceneMap);
+        this->update();
+    }
+    else if(gl_camera.eye.y - grid.start_pos[1] > 33 * 16){
+        // +y out of bounds
+        std::cout<<"2\n";
+        grid.MoveUpdate(2, scene.mSceneMap);
+        this->update();
+    }
+    else if(gl_camera.eye.y - grid.start_pos[1] < 32 * 16){
+        std::cout<<"3\n";
+        // -y out of bounds
+        grid.MoveUpdate(3, scene.mSceneMap);
+        this->update();
+    }
+    else if(gl_camera.eye.z - grid.start_pos[2] > 33 * 16){
+        // +z out of bounds
+        std::cout<<"4\n";
+        grid.MoveUpdate(4, scene.mSceneMap);
+        this->update();
+
+    }
+    else if(gl_camera.eye.z - grid.start_pos[2] < 32 * 16){
+        // -z out of bounds
+        std::cout<<"5\n";
+        grid.MoveUpdate(5, scene.mSceneMap);
+        this->update();
+
     }
 }
 

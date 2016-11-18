@@ -7,6 +7,7 @@
 #include <scene/cube.h>
 #include "camera.h"
 #include <scene/scene.h>
+#include <chunk.h>
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
@@ -19,6 +20,7 @@ private:
     Cube geom_cube;// The instance of a unit cube we can use to render any cube. Should NOT be used in final version of your project.
     ShaderProgram prog_lambert;// A shader program that uses lambertian reflection
     ShaderProgram prog_flat;// A shader program that uses "flat" reflection (no shadowing at all)
+    ShaderProgram prog_new;
 
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
                 // Don't worry too much about this. Just know it is necessary in order to render geometry.
@@ -26,6 +28,7 @@ private:
     Camera gl_camera;
     Scene scene;
 
+    superchunk grid;
     /// Timer linked to timerUpdate(). Fires approx. 60 times per second
     QTimer timer;
 
@@ -39,6 +42,7 @@ public:
     void paintGL();
 
     void GLDrawScene();
+    void initializeGrid();
 
 protected:
     void keyPressEvent(QKeyEvent *e);
