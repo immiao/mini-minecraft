@@ -42,62 +42,118 @@ void chunk::set(int x, int y, int z, int type){
 
 void chunk::update(){
     changed = false;
-
-    std::vector<glm::ivec4> vertex;
+    std::vector<VertexData> vertex;
     int i = 0;
     for(int x = 0; x < CX; x++)
         for(int y = 0; y < CY; y++)
             for(int z = 0; z < CZ; z++){
                 int type = block[x][y][z];
+                VertexData vert;
                 //Empty Block?
                 if(!type)
                     continue;
+                //set the color of the vertexData
+                vert.col = (glm::vec4 (0.2f, 1.0f, 0.6f,      1));
                 //View from negative x
-                vertex.push_back(glm::ivec4(x   ,y  ,z  ,   type));
-                vertex.push_back(glm::ivec4(x   ,y  ,z+1,   type));
-                vertex.push_back(glm::ivec4(x   ,y+1,z  ,   type));
-                vertex.push_back(glm::ivec4(x   ,y+1,z  ,   type));
-                vertex.push_back(glm::ivec4(x   ,y  ,z+1,   type));
-                vertex.push_back(glm::ivec4(x   ,y+1,z+1,   type));
+                if(x > 0 && !block[x-1][y][z] || x == 0){
+                    vert.nor = (glm::ivec4(-1  ,0  ,0  ,      1));
+                    vert.pos = (glm::ivec4(x   ,y  ,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y  ,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y+1,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y+1,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y  ,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y+1,z+1,   type));
+                    vertex.push_back(vert);
+                }
                 //View from positive x
-                vertex.push_back(glm::ivec4(x+1 ,y  ,z  ,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y+1,z  ,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y  ,z+1,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y+1,z  ,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y+1,z+1,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y  ,z+1,   type));
+                if(x < CX-1 && !block[x+1][y][z] || x == CX-1){
+                    vert.nor = (glm::ivec4(1   ,0  ,0  ,      1));
+                    vert.pos = (glm::ivec4(x+1 ,y  ,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y+1,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y  ,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y+1,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y+1,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y  ,z+1,   type));
+                    vertex.push_back(vert);
+                }
                 //View from negative y
-                vertex.push_back(glm::ivec4(x   ,y  ,z  ,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y  ,z  ,   type));
-                vertex.push_back(glm::ivec4(x   ,y  ,z+1,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y  ,z  ,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y  ,z+1,   type));
-                vertex.push_back(glm::ivec4(x   ,y  ,z+1,   type));
+                if(y > 0 && !block[x][y-1][z] || y == 0){
+                    vert.nor = (glm::ivec4(0   ,-1 ,0  ,      1));
+                    vert.pos = (glm::ivec4(x   ,y  ,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y  ,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y  ,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y  ,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y  ,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y  ,z+1,   type));
+                    vertex.push_back(vert);
+                }
                 //View from positive y
-                vertex.push_back(glm::ivec4(x   ,y+1,z  ,   type));
-                vertex.push_back(glm::ivec4(x   ,y+1,z+1,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y+1,z  ,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y+1,z  ,   type));
-                vertex.push_back(glm::ivec4(x   ,y+1,z+1,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y+1,z+1,   type));
+                if(y < CY-1 && !block[x][y+1][z] || y == CY-1){
+                    vert.nor = (glm::ivec4(0   ,1  ,0  ,      1));
+                    vert.pos = (glm::ivec4(x   ,y+1,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y+1,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y+1,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y+1,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y+1,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y+1,z+1,   type));
+                    vertex.push_back(vert);
+                }
                 //View from nagative z
-                vertex.push_back(glm::ivec4(x   ,y  ,z  ,   type));
-                vertex.push_back(glm::ivec4(x   ,y+1,z  ,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y+1,z  ,   type));
-                vertex.push_back(glm::ivec4(x   ,y  ,z  ,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y+1,z  ,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y  ,z  ,   type));
+                if(z > 0 && !block[x][y][z-1] || z == 0){
+                    vert.nor = (glm::ivec4(0   ,0  ,-1 ,      1));
+                    vert.pos = (glm::ivec4(x   ,y  ,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y+1,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y+1,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y  ,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y+1,z  ,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y  ,z  ,   type));
+                    vertex.push_back(vert);
+                }
                 //View from positive z
-                vertex.push_back(glm::ivec4(x   ,y  ,z+1,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y  ,z+1,   type));
-                vertex.push_back(glm::ivec4(x   ,y+1,z+1,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y  ,z+1,   type));
-                vertex.push_back(glm::ivec4(x+1 ,y+1,z+1,   type));
-                vertex.push_back(glm::ivec4(x   ,y+1,z+1,   type));
+                if(z < CZ-1 && !block[x][y][z+1] || z == CZ-1){
+                    vert.nor = (glm::ivec4(0   ,0  ,1  ,      1));
+                    vert.pos = (glm::ivec4(x   ,y  ,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y  ,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y+1,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y  ,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x+1 ,y+1,z+1,   type));
+                    vertex.push_back(vert);
+                    vert.pos = (glm::ivec4(x   ,y+1,z+1,   type));
+                    vertex.push_back(vert);
+                }
             }
     elements = vertex.size();
     context->glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    context->glBufferData(GL_ARRAY_BUFFER, elements * sizeof(glm::ivec4), vertex.data(), GL_STATIC_DRAW);
+    context->glBufferData(GL_ARRAY_BUFFER, elements * sizeof(VertexData), vertex.data(), GL_STATIC_DRAW);
 }
 
 void chunk::render(ShaderProgram prog){
@@ -112,10 +168,16 @@ void chunk::render(ShaderProgram prog){
     context->glEnable(GL_DEPTH_TEST);
 
     context->glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    int attribute_coord = -1;
-    attribute_coord = context->glGetAttribLocation(prog.prog, "vs_coord");
+    int attribute_coord = -1, attribute_normal = -1, attribute_color = -1;
+    attribute_coord  = context->glGetAttribLocation(prog.prog, "vs_coord");
+    attribute_normal = context->glGetAttribLocation(prog.prog, "vs_nor");
+    attribute_color  = context->glGetAttribLocation(prog.prog, "vs_col");
     context->glEnableVertexAttribArray(attribute_coord);
-    context->glVertexAttribIPointer(attribute_coord, 4, GL_INT, 0, 0);
+    context->glVertexAttribIPointer(attribute_coord, 4, GL_INT, sizeof(VertexData), (void*)0);
+    context->glEnableVertexAttribArray(attribute_normal);
+    context->glVertexAttribIPointer(attribute_normal, 4, GL_INT, sizeof(VertexData), (void*)sizeof(glm::ivec4));
+    context->glEnableVertexAttribArray(attribute_color);
+    context->glVertexAttribPointer(attribute_color, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)(2 * sizeof(glm::ivec4)));
     context->glDrawArrays(GL_TRIANGLES, 0, elements);
 }
 
@@ -175,6 +237,10 @@ void superchunk::render(ShaderProgram prog){
     for(int x = 0; x < SCX; x++)
         for(int y = 0; y < SCY; y++)
             for(int z = 0; z < SCZ; z++){
+                //compute distance between the chunk right now and the chunk of camera
+                int distance = abs(x - 32) + abs(y - 32) + abs(z - 32);
+                if(distance > 32)
+                    continue;
                 if(cl[x][y][z]){
 //                    std::cout<<x<<" "<<y<<" "<<z<<"\n";
                     glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(x * CX, y * CY, z * CZ) + start_pos);

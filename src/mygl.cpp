@@ -218,38 +218,38 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     //Test whether need to update the superchunk
     if(gl_camera.eye.x - grid.start_pos[0] > 33 * 16){
         // +x out of bounds
-        std::cout<<"0\n";
+//        std::cout<<"0\n";
         grid.MoveUpdate(0, scene.mSceneMap);
         this->update();
     }
     else if(gl_camera.eye.x - grid.start_pos[0] < 32 * 16){
         // -x out of bounds
-        std::cout<<"1\n";
+//        std::cout<<"1\n";
         grid.MoveUpdate(1, scene.mSceneMap);
         this->update();
     }
     else if(gl_camera.eye.y - grid.start_pos[1] > 33 * 16){
         // +y out of bounds
-        std::cout<<"2\n";
+//        std::cout<<"2\n";
         grid.MoveUpdate(2, scene.mSceneMap);
         this->update();
     }
     else if(gl_camera.eye.y - grid.start_pos[1] < 32 * 16){
-        std::cout<<"3\n";
+//        std::cout<<"3\n";
         // -y out of bounds
         grid.MoveUpdate(3, scene.mSceneMap);
         this->update();
     }
     else if(gl_camera.eye.z - grid.start_pos[2] > 33 * 16){
         // +z out of bounds
-        std::cout<<"4\n";
+//        std::cout<<"4\n";
         grid.MoveUpdate(4, scene.mSceneMap);
         this->update();
 
     }
     else if(gl_camera.eye.z - grid.start_pos[2] < 32 * 16){
         // -z out of bounds
-        std::cout<<"5\n";
+//        std::cout<<"5\n";
         grid.MoveUpdate(5, scene.mSceneMap);
         this->update();
 
