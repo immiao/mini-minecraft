@@ -16,7 +16,9 @@ SOURCES += \
     $$PWD/scene/scene.cpp \
     $$PWD/scene/transform.cpp \
     $$PWD/scene/block.cpp \
-    $$PWD/perlinnoise.cpp
+    $$PWD/perlinnoise.cpp \
+    $$PWD/scene/screen_center.cpp \
+    $$PWD/scene/screen_triangles.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -32,4 +34,6 @@ HEADERS += \
     $$PWD/scene/scene.h \
     $$PWD/scene/transform.h \
     $$PWD/scene/block.h \
-    $$PWD/perlinnoise.h
+    $$PWD/perlinnoise.h \
+    $$PWD/scene/screen_center.h \
+    $$PWD/scene/screen_triangles.h

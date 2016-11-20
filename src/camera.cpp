@@ -101,3 +101,15 @@ void Camera::TranslateAlongUp(float amt)
     eye += translation;
     ref += translation;
 }
+void Camera::SetRef(int x, int y)
+{
+    float NDC_X=2*float(x)/float(width)-1;
+    float NDC_Y=1-2*float(y)/float(height);
+    NDC_X/=10.0f;
+    NDC_Y/=10.0f;
+    glm::vec3 p=ref+NDC_X*H+NDC_Y*V;
+
+
+    ref=p;
+    RecomputeAttributes();
+}

@@ -1,22 +1,25 @@
+#define _USE_MATH_DEFINES
 #include "mygl.h"
 #include <la.h>
 
 #include <iostream>
 #include <QApplication>
 #include <QKeyEvent>
+#include<math.h>
 
 
 MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
-      geom_cube(this),
-      prog_lambert(this), prog_flat(this),
-      gl_camera()
+      geom_cube(this),center(this),T(this),
+      prog_lambert(this), prog_flat(this),prog_screen(this),
+      gl_camera(),mousemove(false)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
     // Tell the timer to redraw 60 times per second
     timer.start(16);
     setFocusPolicy(Qt::ClickFocus);
+
 }
 
 MyGL::~MyGL()
@@ -24,6 +27,7 @@ MyGL::~MyGL()
     makeCurrent();
     glDeleteVertexArrays(1, &vao);
     geom_cube.destroy();
+    center.destroy();
 }
 
 void MyGL::initializeGL()
@@ -57,6 +61,7 @@ void MyGL::initializeGL()
     prog_lambert.create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
     prog_flat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
+    prog_screen.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
 
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
@@ -69,6 +74,10 @@ void MyGL::initializeGL()
     glBindVertexArray(vao);
 
     scene.Create();
+    center.InitializeScreenSize(width(),height());
+    T.InitializeScreenSize(width(),height());
+    center.create();
+    T.create();
 }
 
 void MyGL::resizeGL(int w, int h)
@@ -84,6 +93,8 @@ void MyGL::resizeGL(int w, int h)
 
     prog_lambert.setViewProjMatrix(viewproj);
     prog_flat.setViewProjMatrix(viewproj);
+    prog_screen.setViewProjMatrix(glm::mat4(1));
+
 
     printGLErrorLog();
 }
@@ -98,12 +109,20 @@ void MyGL::paintGL()
 
     prog_flat.setViewProjMatrix(gl_camera.getViewProj());
     prog_lambert.setViewProjMatrix(gl_camera.getViewProj());
+    prog_screen.setViewProjMatrix(glm::mat4(1));
 
     GLDrawScene();
+//    glDisable(GL_DEPTH_TEST);
+    prog_screen.setModelMatrix(glm::mat4(1));
+    prog_screen.draw(center);
+    prog_screen.draw(T);
+//    glEnable(GL_DEPTH_TEST);
 }
 
 void MyGL::GLDrawScene()
 {
+//    tuple t(1,2,3);
+//    scene.mSceneMap.find(t) != scene.mSceneMap.end();
     std::map<tuple, Block*>::iterator iter;
     for (iter = scene.mSceneMap.begin(); iter != scene.mSceneMap.end(); iter++)
     {
@@ -135,9 +154,11 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     } else if (e->key() == Qt::Key_Left) {
         gl_camera.RotateAboutUp(amount);
     } else if (e->key() == Qt::Key_Up) {
-        gl_camera.RotateAboutRight(-amount);
+        //gl_camera.RotateAboutRight(-amount);
+        gl_camera.TranslateAlongLook(amount);
     } else if (e->key() == Qt::Key_Down) {
-        gl_camera.RotateAboutRight(amount);
+        //gl_camera.RotateAboutRight(amount);
+        gl_camera.TranslateAlongLook(-amount);
     } else if (e->key() == Qt::Key_1) {
         gl_camera.fovy += amount;
     } else if (e->key() == Qt::Key_2) {
@@ -157,6 +178,57 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     } else if (e->key() == Qt::Key_R) {
         gl_camera = Camera(this->width(), this->height());
     }
+    gl_camera.RecomputeAttributes();
+    update();  // Calls paintGL, among other things
+
+    //printf("%f %f %d %f\n", gl_camera.ref.x, gl_camera.ref.z, scene.mMinXYZ.z, fabs(gl_camera.ref.z - scene.mMinXYZ.z));
+    if (fabs(gl_camera.ref.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
+    {
+        //printf("0\n");
+        scene.GenerateBlocks(0);
+    }
+    else if (fabs(gl_camera.ref.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
+    {
+        //printf("1\n");
+        scene.GenerateBlocks(1);
+    }
+    else if (fabs(gl_camera.ref.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
+    {
+        //printf("2\n");
+        scene.GenerateBlocks(2);
+    }
+    else if (fabs(gl_camera.ref.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
+    {
+        //printf("3\n");
+        scene.GenerateBlocks(3);
+    }
+}
+void MyGL::mouseMoveEvent(QMouseEvent *event)
+{     
+    if(!mousemove)
+    {
+        mousemove=true;
+        mouse_oldpos=event->pos();
+        return;
+    }
+    if(mouse_oldpos.x()==width()-1)
+    {
+        QCursor::setPos(width()/2,height()/2);
+        mouse_oldpos=QPoint(width()/2,height()/2);
+        return;
+    }
+    QPoint p=event->pos()-mouse_oldpos;
+    mouse_oldpos=event->pos();
+
+    float delta_w=2*float(p.x())/float(width())*glm::length(gl_camera.H);
+    float delta_h=2*float(p.y())/float(height())*glm::length(gl_camera.V);
+    float theta=atan(delta_w/glm::length(gl_camera.ref-gl_camera.eye))*180/M_PI;
+    float fai=atan(delta_h/glm::length(gl_camera.ref-gl_camera.eye))*180/M_PI;
+    gl_camera.RotateAboutUp(-theta);
+    gl_camera.RecomputeAttributes();
+    gl_camera.RotateAboutRight(-fai);
+
+//    gl_camera.SetRef(p.x(),p.y());
     gl_camera.RecomputeAttributes();
     update();  // Calls paintGL, among other things
 
