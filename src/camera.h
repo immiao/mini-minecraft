@@ -1,6 +1,8 @@
 #pragma once
 
 #include <la.h>
+#define WALKING_MODE 1
+#define FLYING_MODE 2
 
 //A perspective projection camera
 //Receives its eye position and reference point from the scene XML file
@@ -20,6 +22,8 @@ public:
     //Computed attributes
     float aspect;
     float gimblelock_angle;
+
+    int cameramode;//1 means walking mode, 2 means flying mode
 
     glm::vec3 eye,      //The position of the camera in world space
               ref,      //The point in world space towards which the camera is pointing

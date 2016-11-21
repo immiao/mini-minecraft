@@ -15,6 +15,7 @@ MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
       gl_camera(), geom_cube(this),center(this),T(this),
       prog_lambert(this), prog_flat(this), prog_new(this),
+      key1(Qt::Key_unknown),key2(Qt::Key_unknown),
       grid(this),mousemove(false),game_begin(false),jump_state(false),\
       timecount(0),g_velocity(0),external_force_acceleration(-gravity_acceleration),\
       character_size(0,0,0)
@@ -398,53 +399,103 @@ void MyGL::keyPressEvent(QKeyEvent *e)
         gl_camera.RotateAboutUp(amount);
     } else if (e->key() == Qt::Key_Up) {
         //gl_camera.RotateAboutRight(-amount);
-        if(collision_test(FORWARD,amount))
-            gl_camera.TranslateAlongLook(-0.05f);
-        else
+        if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongLook(amount);
+        else
+        {
+            if(collision_test(FORWARD,amount))
+                gl_camera.TranslateAlongLook(-0.05f);
+            else
+                gl_camera.TranslateAlongLook(amount);
+        }
     } else if (e->key() == Qt::Key_Down) {
         //gl_camera.RotateAboutRight(amount);
-        if(collision_test(BACK,-amount))
-            gl_camera.TranslateAlongLook(0.05f);
-        else
+        if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongLook(-amount);
+        else
+        {
+            if(collision_test(BACK,-amount))
+                gl_camera.TranslateAlongLook(0.05f);
+            else
+                gl_camera.TranslateAlongLook(-amount);
+        }
     } else if (e->key() == Qt::Key_1) {
         gl_camera.fovy += amount;
     } else if (e->key() == Qt::Key_2) {
         gl_camera.fovy -= amount;
+    } else if (e->key() == Qt::Key_3) {
+        QMessageBox::information(NULL,"Note","Walking Mode");
+        gl_camera = Camera(this->width(), this->height(),\
+                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
+                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
+                           glm::vec3(0,1,0));
+        gl_camera.cameramode=WALKING_MODE;
+    } else if (e->key() == Qt::Key_4) {
+        QMessageBox::information(NULL,"Note","Flying Mode");
+        gl_camera = Camera(this->width(), this->height(),\
+                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
+                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
+                           glm::vec3(0,1,0));
+        gl_camera.cameramode=FLYING_MODE;
+
     } else if (e->key() == Qt::Key_W) {
-        if(collision_test(FORWARD,amount))
-            gl_camera.TranslateAlongLook(-0.05f);
-        else
+        if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongLook(amount);
+        else
+        {
+            if(collision_test(FORWARD,amount))
+                gl_camera.TranslateAlongLook(-0.05f);
+            else
+                gl_camera.TranslateAlongLook(amount);
+        }
     } else if (e->key() == Qt::Key_S) {
-        if(collision_test(BACK,-amount))
-            gl_camera.TranslateAlongLook(0.05f);
-        else
+        if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongLook(-amount);
+        else
+        {
+            if(collision_test(BACK,-amount))
+                gl_camera.TranslateAlongLook(0.05f);
+            else
+                gl_camera.TranslateAlongLook(-amount);
+        }
+
     } else if (e->key() == Qt::Key_D) {
-        if(collision_test(RIGHT,amount))
-            gl_camera.TranslateAlongRight(-0.05f);
-        else
+        if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongRight(amount);
-    } else if (e->key() == Qt::Key_A) {
-        if(collision_test(LEFT,-amount))
-            gl_camera.TranslateAlongRight(0.05f);
         else
+        {
+            if(collision_test(RIGHT,amount))
+                gl_camera.TranslateAlongRight(-0.05f);
+            else
+                gl_camera.TranslateAlongRight(amount);
+        }
+    } else if (e->key() == Qt::Key_A) {
+        if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongRight(-amount);
+        else
+        {
+            if(collision_test(LEFT,-amount))
+                gl_camera.TranslateAlongRight(0.05f);
+            else
+                gl_camera.TranslateAlongRight(-amount);
+        }
 //    } else if (e->key() == Qt::Key_Q) {
 //        gl_camera.TranslateAlongUp(-amount);
 //    } else if (e->key() == Qt::Key_E) {
 //        gl_camera.TranslateAlongUp(amount);
     } else if(e->key()==Qt::Key_Space){
-        if(!jump_state)
-        {
-            g_velocity=2.0f;
-            external_force_acceleration=2.0f;
-            jump_state=true;
-        }
+        if(gl_camera.cameramode==WALKING_MODE)
+            if(!jump_state)
+            {
+                g_velocity=2.0f;
+                external_force_acceleration=2.0f;
+                jump_state=true;
+            }
     } else if (e->key() == Qt::Key_R) {
-        gl_camera = Camera(this->width(), this->height());
+        gl_camera = Camera(this->width(), this->height(),\
+                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
+                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
+                           glm::vec3(0,1,0));
     }
     gl_camera.RecomputeAttributes();
     update();  // Calls paintGL, among other things
@@ -592,6 +643,8 @@ void MyGL::timerUpdate()
 {
     if(!game_begin)
         return;
+    if(gl_camera.cameramode==FLYING_MODE)
+        return;
     if(boundarytest())
     {
         QMessageBox::information(NULL,"Note","Falling out of the boundary!");
@@ -612,7 +665,4 @@ void MyGL::timerUpdate()
         g_velocity+=gravity_acceleration*(time_step);
         external_force_acceleration=0;
     }
-
-
-
 }

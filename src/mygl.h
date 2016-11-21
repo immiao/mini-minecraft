@@ -41,6 +41,8 @@ private:
     /// Timer linked to timerUpdate(). Fires approx. 60 times per second
     QTimer timer;
 
+    Qt::Key key1,key2;
+
     glm::vec3 character_size;//used to define the size of character on the 3 directions
     bool game_begin;
     bool mousemove;
@@ -48,6 +50,8 @@ private:
     float timecount;
     float external_force_acceleration;
     float g_velocity;
+
+
 
 
 public:
@@ -64,6 +68,8 @@ public:
 
     void breakblocks(QPoint screen_pos,int distance_max);
     void addblocks(QPoint screen_pos,int distance_max);
+    void Keyevents(Qt::Key key);
+
 
     bool boundarytest();
     bool collision_test(int direction,float step);

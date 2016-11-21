@@ -11,6 +11,7 @@ Camera::Camera():
     up = glm::vec3(0,1,0);
     right = glm::vec3(1,0,0);
     gimblelock_angle=0;
+    cameramode=WALKING_MODE;
 }
 
 Camera::Camera(unsigned int w, unsigned int h):
@@ -26,8 +27,8 @@ Camera::Camera(unsigned int w, unsigned int h, const glm::vec3 &e, const glm::ve
     eye(e),
     ref(r),
     world_up(worldUp),
-    gimblelock_angle(0)
-
+    gimblelock_angle(0),
+    cameramode(WALKING_MODE)
 {
     RecomputeAttributes();
 }
@@ -46,6 +47,7 @@ Camera::Camera(const Camera &c):
     right(c.right),
     world_up(c.world_up),
     gimblelock_angle(c.gimblelock_angle),
+    cameramode(c.cameramode),
     V(c.V),
     H(c.H)
 {}
@@ -94,7 +96,8 @@ void Camera::RotateAboutRight(float deg)
 void Camera::TranslateAlongLook(float amt)
 {
     glm::vec3 translation = look * amt;
-    translation[1]=0;
+    if(cameramode==WALKING_MODE)
+        translation[1]=0;
     eye += translation;
     ref += translation;
 }
