@@ -19,6 +19,7 @@ public:
 
     //Computed attributes
     float aspect;
+    float gimblelock_angle;
 
     glm::vec3 eye,      //The position of the camera in world space
               ref,      //The point in world space towards which the camera is pointing

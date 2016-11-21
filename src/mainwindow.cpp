@@ -8,6 +8,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->mygl->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    ui->mygl->showFullScreen();
+    ui->mygl->setCursor(Qt::BlankCursor);;
     ui->mygl->setFocus();
 }
 

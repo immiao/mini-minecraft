@@ -1,6 +1,7 @@
 #include "shaderprogram.h"
 #include <QFile>
 #include <QStringBuilder>
+#include<iostream>
 
 
 ShaderProgram::ShaderProgram(GLWidget277 *context)
@@ -66,6 +67,8 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifModelInvTr = context->glGetUniformLocation(prog, "u_ModelInvTr");
     unifViewProj   = context->glGetUniformLocation(prog, "u_ViewProj");
     unifColor      = context->glGetUniformLocation(prog, "u_Color");
+
+    unifTexture    = context->glGetUniformLocation(prog, "u_Sampler");
 }
 
 void ShaderProgram::useMe()
@@ -163,6 +166,7 @@ void ShaderProgram::draw(Drawable &d)
     // Bind the index buffer and then draw shapes from it.
     // This invokes the shader program, which accesses the vertex buffers.
     d.bindIdx();
+
     context->glDrawElements(d.drawMode(), d.elemCount(), GL_UNSIGNED_INT, 0);
 
     if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
@@ -246,4 +250,16 @@ void ShaderProgram::printLinkInfoLog(int prog)
         qDebug() << "LinkInfoLog:" << endl << infoLog << endl;
         delete [] infoLog;
     }
+}
+
+void ShaderProgram::setTexture(){
+    context->glGenTextures(1, &textureHandle);
+    context->glActiveTexture(GL_TEXTURE);
+    context->glBindTexture(GL_TEXTURE_2D, textureHandle);
+
+    int width, height;
+    //We're missing dynamic library right now.
+    //unsigned char* image = SOIL_load_image("relative path to the image", &width, &height, 0, SOIL_LOAD_RGB);
+
+
 }
