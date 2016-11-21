@@ -35,13 +35,13 @@ void main()
 
         float ambientTerm = 0.2;
 
-        float lightIntensity = 0.3 * diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier
+        float lightIntensity = 0.5 * diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier
                                                             //to simulate ambient lighting. This ensures that faces that are not
                                                             //lit by our point light are not completely black.
         diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec2));
         diffuseTerm = clamp(diffuseTerm, 0, 1);
 
-        lightIntensity += 1.0 * diffuseTerm;
+        lightIntensity += 0.5 * diffuseTerm;
         // Compute final shaded color
         out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
 }
