@@ -40,4 +40,5 @@ public:
     void TranslateAlongLook(float amt);
     void TranslateAlongRight(float amt);
     void TranslateAlongUp(float amt);
+    void TranslateAlongWorldUp(float amt);
 };

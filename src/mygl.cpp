@@ -15,8 +15,9 @@ MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
       gl_camera(), geom_cube(this),center(this),T(this),
       prog_lambert(this), prog_flat(this), prog_new(this),
-      grid(this),mousemove(false),game_begin(false),\
-      timecount(0),g_velocity(0)
+      grid(this),mousemove(false),game_begin(false),jump_state(false),\
+      timecount(0),g_velocity(0),external_force_acceleration(-gravity_acceleration),\
+      character_size(0,0,0)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -79,6 +80,7 @@ void MyGL::initializeGL()
     glBindVertexArray(vao);
 
     game_begin=true;
+    character_size=glm::vec3(0.6,2,0.6);
     scene.Create();
     center.InitializeScreenSize(width(),height());
     T.InitializeScreenSize(width(),height());
@@ -298,91 +300,42 @@ bool MyGL::collision_test(int direction,float step)
     std::map<tuple, Block*>::iterator iter1,iter2,iter3,iter4;
     if(direction==LEFT)
     {
-        pos1=gl_camera.eye+step*gl_camera.right-0.5f*gl_camera.right+0.5f*forward_direction;
-        pos2=gl_camera.eye+step*gl_camera.right-0.5f*gl_camera.right-0.5f*forward_direction;
-        x1=round(pos1[0]);
-        y1=round(pos1[1]);
-        z1=round(pos1[2]);
-        x2=round(pos2[0]);
-        y2=round(pos2[1]);
-        z2=round(pos2[2]);
-
-        tuple temp1(x1,y1,z1),temp2(x1,y1-1,z1),temp3(x2,y2,z2),temp4(x2,y2-1,z2);
-        iter1=scene.mSceneMap.find(temp1);
-        iter2=scene.mSceneMap.find(temp2);
-        iter3=scene.mSceneMap.find(temp3);
-        iter4=scene.mSceneMap.find(temp4);
-        if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
-                iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
-            return true;
-        else
-            return false;
+        pos1=gl_camera.eye+step*gl_camera.right-0.5f*character_size[0]*gl_camera.right+0.5f*character_size[2]*forward_direction;
+        pos2=gl_camera.eye+step*gl_camera.right-0.5f*character_size[0]*gl_camera.right-0.5f*character_size[2]*forward_direction;
     }
     if(direction==RIGHT)
     {
-        pos1=gl_camera.eye+step*gl_camera.right+0.5f*gl_camera.right+0.5f*forward_direction;
-        pos2=gl_camera.eye+step*gl_camera.right+0.5f*gl_camera.right-0.5f*forward_direction;
-        x1=round(pos1[0]);
-        y1=round(pos1[1]);
-        z1=round(pos1[2]);
-        x2=round(pos2[0]);
-        y2=round(pos2[1]);
-        z2=round(pos2[2]);
-
-        tuple temp1(x1,y1,z1),temp2(x1,y1-1,z1),temp3(x2,y2,z2),temp4(x2,y2-1,z2);
-        iter1=scene.mSceneMap.find(temp1);
-        iter2=scene.mSceneMap.find(temp2);
-        iter3=scene.mSceneMap.find(temp3);
-        iter4=scene.mSceneMap.find(temp4);
-        if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
-                iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
-            return true;
-        else
-            return false;
+        pos1=gl_camera.eye+step*gl_camera.right+0.5f*character_size[0]*gl_camera.right+0.5f*character_size[2]*forward_direction;
+        pos2=gl_camera.eye+step*gl_camera.right+0.5f*character_size[0]*gl_camera.right-0.5f*character_size[2]*forward_direction;
     }
     if(direction==BACK)
     {
-        pos1=gl_camera.eye+step*forward_direction-0.5f*forward_direction+0.5f*gl_camera.right;
-        pos2=gl_camera.eye+step*forward_direction-0.5f*forward_direction-0.5f*gl_camera.right;
-        x1=round(pos1[0]);
-        y1=round(pos1[1]);
-        z1=round(pos1[2]);
-        x2=round(pos2[0]);
-        y2=round(pos2[1]);
-        z2=round(pos2[2]);
-        tuple temp1(x1,y1,z1),temp2(x1,y1-1,z1),temp3(x2,y2,z2),temp4(x2,y2-1,z2);
-        iter1=scene.mSceneMap.find(temp1);
-        iter2=scene.mSceneMap.find(temp2);
-        iter3=scene.mSceneMap.find(temp3);
-        iter4=scene.mSceneMap.find(temp4);
-        if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
-                iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
-            return true;
-        else
-            return false;
+        pos1=gl_camera.eye+step*forward_direction-0.5f*character_size[2]*forward_direction+0.5f*character_size[0]*gl_camera.right;
+        pos2=gl_camera.eye+step*forward_direction-0.5f*character_size[2]*forward_direction-0.5f*character_size[0]*gl_camera.right;
     }
     if(direction==FORWARD)
     {
 
-        pos1=gl_camera.eye+step*forward_direction+0.5f*forward_direction+0.5f*gl_camera.right;
-        pos2=gl_camera.eye+step*forward_direction+0.5f*forward_direction-0.5f*gl_camera.right;
-        x1=round(pos1[0]);
-        y1=round(pos1[1]);
-        z1=round(pos1[2]);
-        x2=round(pos2[0]);
-        y2=round(pos2[1]);
-        z2=round(pos2[2]);
-        tuple temp1(x1,y1,z1),temp2(x1,y1-1,z1),temp3(x2,y2,z2),temp4(x2,y2-1,z2);
-        iter1=scene.mSceneMap.find(temp1);
-        iter2=scene.mSceneMap.find(temp2);
-        iter3=scene.mSceneMap.find(temp3);
-        iter4=scene.mSceneMap.find(temp4);
-        if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
-                iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
-            return true;
-        else
-            return false;
+        pos1=gl_camera.eye+step*forward_direction+0.5f*character_size[2]*forward_direction+0.5f*character_size[0]*gl_camera.right;
+        pos2=gl_camera.eye+step*forward_direction+0.5f*character_size[2]*forward_direction-0.5f*character_size[0]*gl_camera.right;
     }
+    x1=round(pos1[0]);
+    y1=round(pos1[1]);
+    z1=round(pos1[2]);
+    x2=round(pos2[0]);
+    y2=round(pos2[1]);
+    z2=round(pos2[2]);
+
+    tuple temp1(x1,y1,z1),temp2(x1,y1-1,z1),temp3(x2,y2,z2),temp4(x2,y2-1,z2);
+    iter1=scene.mSceneMap.find(temp1);
+    iter2=scene.mSceneMap.find(temp2);
+    iter3=scene.mSceneMap.find(temp3);
+    iter4=scene.mSceneMap.find(temp4);
+    if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
+            iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
+        return true;
+    else
+        return false;
 
 }
 bool MyGL::bottom_test()
@@ -391,10 +344,14 @@ bool MyGL::bottom_test()
     glm::vec3 pos1,pos2,pos3,pos4;
 //    int x1=0,y1=0,z1=0,x2=0,y2=0,z2=0,x3=0,y3=0,z3=0,x4=0,y4=0,z4=0;
     std::map<tuple, Block*>::iterator iter1,iter2,iter3,iter4;
-    pos1=gl_camera.eye-glm::vec3(0,1.5,0)+0.45f*forward_direction-0.45f*gl_camera.right;
-    pos2=gl_camera.eye-glm::vec3(0,1.5,0)+0.45f*forward_direction+0.45f*gl_camera.right;
-    pos3=gl_camera.eye-glm::vec3(0,1.5,0)-0.45f*forward_direction-0.45f*gl_camera.right;
-    pos4=gl_camera.eye-glm::vec3(0,1.5,0)-0.45f*forward_direction+0.45f*gl_camera.right;
+    pos1=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)+0.45f*character_size[2]*forward_direction\
+            -0.45f*character_size[0]*gl_camera.right;
+    pos2=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)+0.45f*character_size[2]*forward_direction\
+            +0.45f*character_size[0]*gl_camera.right;
+    pos3=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)-0.45f*character_size[2]*forward_direction\
+            -0.45f*character_size[0]*gl_camera.right;
+    pos4=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)-0.45f*character_size[2]*forward_direction\
+            +0.45f*character_size[0]*gl_camera.right;
     tuple temp1(round(pos1[0]),round(pos1[1]),round(pos1[2]))\
             ,temp2(round(pos2[0]),round(pos2[1]),round(pos2[2]))\
             ,temp3(round(pos3[0]),round(pos3[1]),round(pos3[2]))\
@@ -409,13 +366,25 @@ bool MyGL::bottom_test()
     else
         return false;
 }
+bool MyGL::boundarytest()
+{
+//    if(gl_camera.eye[0]>(scene.mMaxXYZ.x-5)||gl_camera.eye[0]<(scene.mMinXYZ.x+5)||\
+//            gl_camera.eye[1]>(scene.mMaxXYZ.y-5)||gl_camera.eye[1]<(scene.mMinXYZ.y+5)||\
+//            gl_camera.eye[2]>(scene.mMaxXYZ.z-5)||gl_camera.eye[2]<(scene.mMinXYZ.z+5))
+    if(fabs(gl_camera.eye[0])>500||fabs(gl_camera.eye[1])>500||\
+            fabs(gl_camera.eye[2])>500)
+        return true;
+    return false;
+
+}
 
 void MyGL::keyPressEvent(QKeyEvent *e)
 {
-    float amount = 0.2f;
+    float amount = 0.15f;
     if(e->modifiers() & Qt::ShiftModifier){
         amount = 2.0f;
     }
+
     // http://doc.qt.io/qt-5/qt.html#Key-enum
     // This could all be much more efficient if a switch
     // statement were used, but I really dislike their
@@ -463,10 +432,17 @@ void MyGL::keyPressEvent(QKeyEvent *e)
             gl_camera.TranslateAlongRight(0.05f);
         else
             gl_camera.TranslateAlongRight(-amount);
-    } else if (e->key() == Qt::Key_Q) {
-        gl_camera.TranslateAlongUp(-amount);
-    } else if (e->key() == Qt::Key_E) {
-        gl_camera.TranslateAlongUp(amount);
+//    } else if (e->key() == Qt::Key_Q) {
+//        gl_camera.TranslateAlongUp(-amount);
+//    } else if (e->key() == Qt::Key_E) {
+//        gl_camera.TranslateAlongUp(amount);
+    } else if(e->key()==Qt::Key_Space){
+        if(!jump_state)
+        {
+            g_velocity=2.0f;
+            external_force_acceleration=2.0f;
+            jump_state=true;
+        }
     } else if (e->key() == Qt::Key_R) {
         gl_camera = Camera(this->width(), this->height());
     }
@@ -616,25 +592,27 @@ void MyGL::timerUpdate()
 {
     if(!game_begin)
         return;
+    if(boundarytest())
+    {
+        QMessageBox::information(NULL,"Note","Falling out of the boundary!");
+        QApplication::quit();
+    }
+    float distance=g_velocity*(time_step)+0.5*(gravity_acceleration+external_force_acceleration)*time_step*time_step;
+    gl_camera.TranslateAlongWorldUp(distance);
+    update();
     if(bottom_test())
     {
         g_velocity=0;
         timecount=0;
+        external_force_acceleration=-gravity_acceleration;
+        jump_state=false;
     }
     else
     {
-        if(fabs(gl_camera.eye[1])>200)
-        {
-            QMessageBox::information(NULL,"Note","Falling out of the boundary!");
-            QApplication::quit();
-        }
-
-        float distance=g_velocity*(time_step)+0.5*gravity_acceleration*time_step*time_step;
-        gl_camera.eye[1]+=distance;
-        gl_camera.ref[1]+=distance;
-        gl_camera.RecomputeAttributes();
         g_velocity+=gravity_acceleration*(time_step);
-        update();
+        external_force_acceleration=0;
     }
+
+
 
 }

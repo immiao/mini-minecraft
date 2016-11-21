@@ -20,7 +20,7 @@
 
 
 const float gravity_acceleration=-0.98f;
-const float time_step=1.0f/20.0f;
+const float time_step=1.0f/15.0f;
 class MyGL
     : public GLWidget277
 {
@@ -41,9 +41,12 @@ private:
     /// Timer linked to timerUpdate(). Fires approx. 60 times per second
     QTimer timer;
 
+    glm::vec3 character_size;//used to define the size of character on the 3 directions
     bool game_begin;
     bool mousemove;
+    bool jump_state;
     float timecount;
+    float external_force_acceleration;
     float g_velocity;
 
 
@@ -61,6 +64,8 @@ public:
 
     void breakblocks(QPoint screen_pos,int distance_max);
     void addblocks(QPoint screen_pos,int distance_max);
+
+    bool boundarytest();
     bool collision_test(int direction,float step);
     bool bottom_test();
 
