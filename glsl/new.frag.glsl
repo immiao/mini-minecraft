@@ -16,7 +16,8 @@ uniform vec4 u_Color; // The color with which to render this instance of geometr
 // These are the interpolated values out of the rasterizer, so you can't know
 // their specific values without knowing the vertices that contributed to them
 in vec4 fs_Nor;
-in vec4 fs_LightVec;
+in vec4 fs_LightVec1;
+in vec4 fs_LightVec2;
 in vec4 fs_Col;
 
 out vec4 out_Col; // This is the final output color that you will see on your
@@ -28,16 +29,19 @@ void main()
         vec4 diffuseColor = fs_Col;
 
         // Calculate the diffuse term for Lambert shading
-        float diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec));
+        float diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec1));
         // Avoid negative lighting values
         diffuseTerm = clamp(diffuseTerm, 0, 1);
 
         float ambientTerm = 0.2;
 
-        float lightIntensity = diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier
+        float lightIntensity = 0.5 * diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier
                                                             //to simulate ambient lighting. This ensures that faces that are not
                                                             //lit by our point light are not completely black.
+        diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec2));
+        diffuseTerm = clamp(diffuseTerm, 0, 1);
 
+        lightIntensity += 0.5 * diffuseTerm;
         // Compute final shaded color
         out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
 }
