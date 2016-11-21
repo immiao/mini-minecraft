@@ -55,4 +55,6 @@ void main()
 
     gl_Position = u_ViewProj * modelposition;// gl_Position is a built-in variable of OpenGL which is
                                              // used to render the final positions of the geometry's vertices
+    fs_LightVec = (modelposition - lightDir);  // Compute the direction in which the light source lies
+    fs_LightVec.w = 0;
 }
