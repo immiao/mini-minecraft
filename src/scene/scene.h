@@ -16,7 +16,7 @@ public:
 
     void Create();
     void clear();
-    void GenerateBlocks(int direction);
+    std::map<tuple, Block *> GenerateBlocks(int direction);
 
     glm::ivec3 mMinXYZ;
     glm::ivec3 mMaxXYZ;

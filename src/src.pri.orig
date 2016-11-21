@@ -14,12 +14,17 @@ SOURCES += \
     $$PWD/cameracontrolshelp.cpp \
     $$PWD/scene/cube.cpp \
     $$PWD/scene/scene.cpp \
-    $$PWD/scene/block.cpp \
-    $$PWD/perlinnoise.cpp      \
-    $$PWD/chunk.cpp \
+<<<<<<< HEAD
     $$PWD/scene/transform.cpp \
+    $$PWD/scene/block.cpp \
+    $$PWD/perlinnoise.cpp \
     $$PWD/scene/screen_center.cpp \
     $$PWD/scene/screen_triangles.cpp
+
+=======
+	$$PWD/scene/block.cpp \
+    $$PWD/perlinnoise.cpp	$$PWD/chunk.cpp
+>>>>>>> ecf4ee5fad6de1bf78e69ba42bbe85575cfb20f8
 HEADERS += \
     $$PWD/la.h \
     $$PWD/mainwindow.h \
@@ -33,7 +38,10 @@ HEADERS += \
     $$PWD/scene/cube.h \
     $$PWD/scene/scene.h \
     $$PWD/scene/block.h \
+<<<<<<< HEAD
     $$PWD/perlinnoise.h \
-    $$PWD/chunk.h       \
     $$PWD/scene/screen_center.h \
     $$PWD/scene/screen_triangles.h
+=======
+    $$PWD/perlinnoise.h    $$PWD/chunk.h
+>>>>>>> ecf4ee5fad6de1bf78e69ba42bbe85575cfb20f8

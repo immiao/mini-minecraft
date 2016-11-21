@@ -11,17 +11,17 @@ void createVertex(std::vector<glm::vec4> &pos,int width,int height)
 
     pos[0][0]=2*(0.5*width+7)/width-1;
     pos[0][1]=0;
-    pos[1][0]=2*(0.5*width+30*cos(M_PI/15))/width-1;
-    pos[1][1]=2*(0.5*height+30*sin(M_PI/15))/height-1;
-    pos[2][0]=2*(0.5*width+30*cos(-M_PI/15))/width-1;
-    pos[2][1]=2*(0.5*height+30*sin(-M_PI/15))/height-1;
+    pos[1][0]=2*(0.5*width+30*cos(-M_PI/15))/width-1;
+    pos[1][1]=2*(0.5*height+30*sin(-M_PI/15))/height-1;
+    pos[2][0]=2*(0.5*width+30*cos(M_PI/15))/width-1;
+    pos[2][1]=2*(0.5*height+30*sin(M_PI/15))/height-1;
 
     pos[3][0]=0;
     pos[3][1]=2*(0.5*height+7)/height-1;
-    pos[4][0]=2*(0.5*width+30*cos(M_PI/15+M_PI/2))/width-1;
-    pos[4][1]=2*(0.5*height+30*sin(M_PI/15+M_PI/2))/height-1;
-    pos[5][0]=2*(0.5*width+30*cos(-M_PI/15+M_PI/2))/width-1;
-    pos[5][1]=2*(0.5*height+30*sin(-M_PI/15+M_PI/2))/height-1;
+    pos[4][0]=2*(0.5*width+30*cos(-M_PI/15+M_PI/2))/width-1;
+    pos[4][1]=2*(0.5*height+30*sin(-M_PI/15+M_PI/2))/height-1;
+    pos[5][0]=2*(0.5*width+30*cos(M_PI/15+M_PI/2))/width-1;
+    pos[5][1]=2*(0.5*height+30*sin(M_PI/15+M_PI/2))/height-1;
 
     for(int i=0;i<6;i++)
     {

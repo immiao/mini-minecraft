@@ -5,14 +5,18 @@
 #include <iostream>
 #include <QApplication>
 #include <QKeyEvent>
-#include<math.h>
+#include <math.h>
+#include<QMessageBox>
 
 
+
+const int MaxReachDistance=8;
 MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
-      geom_cube(this),center(this),T(this),
-      prog_lambert(this), prog_flat(this),prog_screen(this),
-      gl_camera(),mousemove(false)
+      gl_camera(), geom_cube(this),center(this),T(this),
+      prog_lambert(this), prog_flat(this), prog_new(this),
+      grid(this),mousemove(false),game_begin(false),\
+      timecount(0),g_velocity(0)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -28,6 +32,7 @@ MyGL::~MyGL()
     glDeleteVertexArrays(1, &vao);
     geom_cube.destroy();
     center.destroy();
+    T.destroy();
 }
 
 void MyGL::initializeGL()
@@ -61,23 +66,25 @@ void MyGL::initializeGL()
     prog_lambert.create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
     prog_flat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
-    prog_screen.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
 
+    prog_new.create(":/glsl/new.vert.glsl", ":/glsl/new.frag.glsl");
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
     // This makes your geometry render green.
     prog_lambert.setGeometryColor(glm::vec4(0,1,0,1));
-
+    prog_new.setGeometryColor(glm::vec4(0,1,0,1));
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
 //    vao.bind();
     glBindVertexArray(vao);
 
+    game_begin=true;
     scene.Create();
     center.InitializeScreenSize(width(),height());
     T.InitializeScreenSize(width(),height());
     center.create();
     T.create();
+    initializeGrid();
 }
 
 void MyGL::resizeGL(int w, int h)
@@ -85,17 +92,14 @@ void MyGL::resizeGL(int w, int h)
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
 //    gl_camera = Camera(w, h);
-    gl_camera = Camera(w, h, glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 2, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
-                       glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+2, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1), glm::vec3(0,1,0));
+    gl_camera = Camera(w, h, glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
+                       glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1), glm::vec3(0,1,0));
     glm::mat4 viewproj = gl_camera.getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
 
     prog_lambert.setViewProjMatrix(viewproj);
     prog_flat.setViewProjMatrix(viewproj);
-    prog_screen.setViewProjMatrix(glm::mat4(1));
-
-
     printGLErrorLog();
 }
 
@@ -107,16 +111,24 @@ void MyGL::paintGL()
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    prog_flat.setViewProjMatrix(gl_camera.getViewProj());
     prog_lambert.setViewProjMatrix(gl_camera.getViewProj());
-    prog_screen.setViewProjMatrix(glm::mat4(1));
+    prog_new.setViewProjMatrix(gl_camera.getViewProj());
 
-    GLDrawScene();
-//    glDisable(GL_DEPTH_TEST);
-    prog_screen.setModelMatrix(glm::mat4(1));
-    prog_screen.draw(center);
-    prog_screen.draw(T);
-//    glEnable(GL_DEPTH_TEST);
+
+    grid.render(prog_new, gl_camera.getViewProj());
+//    GLDrawScene();
+
+
+    center.create();
+
+    prog_flat.setViewProjMatrix(glm::mat4(1));
+    prog_flat.setModelMatrix(glm::mat4(1));
+
+    glDisable(GL_DEPTH_TEST);
+    prog_flat.draw(center);
+    prog_flat.draw(T);
+    glEnable(GL_DEPTH_TEST);
+
 }
 
 void MyGL::GLDrawScene()
@@ -134,13 +146,275 @@ void MyGL::GLDrawScene()
     }
 }
 
+//initialize the grid by the
+void MyGL::initializeGrid(){
+    int x0 = gl_camera.eye.x ,y0 = gl_camera.eye.y ,z0 = gl_camera.eye.z;
+    grid.start_pos = glm::vec3(x0 - 32 * 16, y0 - 32 * 16, z0 - 32 * 16);
+    memset(grid.cl, 0, sizeof grid.cl);
+    std::map<tuple, Block*>::iterator iter;
+    for (iter = scene.mSceneMap.begin(); iter != scene.mSceneMap.end(); iter++)
+    {
+        // iter->first is a tuple
+        // std::get<index>(tuple) can get the elements in the tuple
+        int x = std::get<0>(iter->first), y = std::get<1>(iter->first), z = std::get<2>(iter->first);
+//        std::cout<<x<<" "<<y<<" "<<z<<" "<<"\n";
+        if(x >= grid.start_pos[0] && x <= (grid.start_pos[0] + 64 * 16) &&
+                y >= grid.start_pos[1] && y <= (grid.start_pos[1] + 64 * 16) &&
+                z >= grid.start_pos[2] && z <= (grid.start_pos[2] + 64 * 16)){
+            grid.set(x,y,z,int(1));
+        }
+//        glm::vec3 trans(std::get<0>(iter->first), std::get<1>(iter->first), std::get<2>(iter->first));
+//        prog_lambert.setModelMatrix(glm::translate(glm::mat4(), trans));
+//        prog_lambert.draw(geom_cube);
+    }
+}
+void MyGL::UpdateWhenNewTerrain(std::map<tuple, Block *> New_map){
+    std::map<tuple, Block*>::iterator iter;
+    for (iter = New_map.begin(); iter != New_map.end(); iter++)
+    {
+        // iter->first is a tuple
+        // std::get<index>(tuple) can get the elements in the tuple
+        int x = std::get<0>(iter->first), y = std::get<1>(iter->first), z = std::get<2>(iter->first);
+//        std::cout<<x<<" "<<y<<" "<<z<<" "<<"\n";
+        if(x >= grid.start_pos[0] && x <= (grid.start_pos[0] + 64 * 16) &&
+                y >= grid.start_pos[1] && y <= (grid.start_pos[1] + 64 * 16) &&
+                z >= grid.start_pos[2] && z <= (grid.start_pos[2] + 64 * 16)){
+            grid.set(x,y,z,int(1));
+        }
+    }
+}
+
+void MyGL::breakblocks(QPoint screen_pos, int distance_max)
+{
+    float NDC_X=2*float(screen_pos.x())/float(width())-1;
+    float NDC_Y=1-2*float(screen_pos.y())/float(height());
+    glm::vec3 p=gl_camera.ref+NDC_X*gl_camera.H+NDC_Y*gl_camera.V;
+    std::map<tuple, Block*>::iterator iter;
+    for(float i=0;i<distance_max;i+=0.05)
+    {
+        int x=round(p[0]),y=round(p[1]),z=round(p[2]);
+        tuple temp(x,y,z);
+        iter=scene.mSceneMap.find(temp);
+        if(iter!=scene.mSceneMap.end())
+        {
+            grid.set(x,y,z,0);
+            scene.mSceneMap.erase(iter);
+            break;
+        }
+
+        p+=(0.05f*glm::normalize(gl_camera.ref-gl_camera.eye));
+    }
+}
+
+void MyGL::addblocks(QPoint screen_pos, int distance_max)
+{
+    float NDC_X=2*float(screen_pos.x())/float(width())-1;
+    float NDC_Y=1-2*float(screen_pos.y())/float(height());
+    glm::vec3 p=gl_camera.ref+NDC_X*gl_camera.H+NDC_Y*gl_camera.V;
+    std::map<tuple, Block*>::iterator iter;
+    for(float i=0;i<distance_max;i+=0.05)
+    {
+        int x=round(p[0]),y=round(p[1]),z=round(p[2]);
+        tuple temp(x,y,z);
+
+        iter=scene.mSceneMap.find(temp);
+        if(iter!=scene.mSceneMap.end())
+        {
+            glm::vec3 cube_center(x,y,z);
+            float distance[6];
+            distance[0]=p[0]-(cube_center[0]-0.5f);
+            distance[1]=(cube_center[0]+0.5f)-p[0];
+            distance[2]=p[2]-(cube_center[2]-0.5f);
+            distance[3]=(cube_center[2]+0.5f)-p[2];
+            distance[4]=p[1]-(cube_center[1]-0.5f);
+            distance[5]=(cube_center[1]+0.5f)-p[1];
+            float min=distance[0];
+            int min_index=0,i=1;
+            for(i=1;i<6;i++)
+                if(distance[i]<min)
+                {
+                    min=distance[i];
+                    min_index=i;
+                }
+
+            Block* pBlock=NULL;
+            tuple tempTuple(0,0,0);
+            if(min_index==0)
+            {
+                pBlock = new Block(glm::ivec3(cube_center[0]-1, cube_center[1], cube_center[2]));
+                tempTuple=tuple(cube_center[0]-1, cube_center[1], cube_center[2]);
+                scene.mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                grid.set(cube_center[0]-1, cube_center[1], cube_center[2],1);
+                break;
+            }
+            if(min_index==1)
+            {
+                pBlock = new Block(glm::ivec3(cube_center[0]+1, cube_center[1], cube_center[2]));
+                tempTuple=tuple(cube_center[0]+1, cube_center[1], cube_center[2]);
+                scene.mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                grid.set(cube_center[0]+1, cube_center[1], cube_center[2],1);
+                break;
+            }
+            if(min_index==2)
+            {
+                pBlock = new Block(glm::ivec3(cube_center[0], cube_center[1], cube_center[2]-1));
+                tempTuple=tuple(cube_center[0], cube_center[1], cube_center[2]-1);
+                scene.mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                grid.set(cube_center[0], cube_center[1], cube_center[2]-1,1);
+                break;
+            }
+            if(min_index==3)
+            {
+                pBlock = new Block(glm::ivec3(cube_center[0], cube_center[1], cube_center[2]+1));
+                tempTuple=tuple(cube_center[0], cube_center[1], cube_center[2]+1);
+                scene.mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                grid.set(cube_center[0], cube_center[1], cube_center[2]+1,1);
+
+                break;
+            }
+            if(min_index==4)
+            {
+                //Can't add a cube below the original one
+                break;
+            }
+            if(min_index==5)
+            {
+                pBlock = new Block(glm::ivec3(cube_center[0], cube_center[1]+1, cube_center[2]));
+                tempTuple=tuple(cube_center[0], cube_center[1]+1, cube_center[2]);
+                scene.mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                grid.set(cube_center[0], cube_center[1]+1, cube_center[2],1);
+                break;
+            }
+        }
+        p+=(0.05f*glm::normalize(gl_camera.ref-gl_camera.eye));
+    }
+
+}
+bool MyGL::collision_test(int direction,float step)
+{
+    glm::vec3 pos1,pos2;
+    glm::vec3 forward_direction=glm::normalize(glm::vec3(gl_camera.look[0],0,gl_camera.look[2]));
+    int x1=0,y1=0,z1=0,x2=0,y2=0,z2=0;
+    std::map<tuple, Block*>::iterator iter1,iter2,iter3,iter4;
+    if(direction==LEFT)
+    {
+        pos1=gl_camera.eye+step*gl_camera.right-0.5f*gl_camera.right+0.5f*forward_direction;
+        pos2=gl_camera.eye+step*gl_camera.right-0.5f*gl_camera.right-0.5f*forward_direction;
+        x1=round(pos1[0]);
+        y1=round(pos1[1]);
+        z1=round(pos1[2]);
+        x2=round(pos2[0]);
+        y2=round(pos2[1]);
+        z2=round(pos2[2]);
+
+        tuple temp1(x1,y1,z1),temp2(x1,y1-1,z1),temp3(x2,y2,z2),temp4(x2,y2-1,z2);
+        iter1=scene.mSceneMap.find(temp1);
+        iter2=scene.mSceneMap.find(temp2);
+        iter3=scene.mSceneMap.find(temp3);
+        iter4=scene.mSceneMap.find(temp4);
+        if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
+                iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
+            return true;
+        else
+            return false;
+    }
+    if(direction==RIGHT)
+    {
+        pos1=gl_camera.eye+step*gl_camera.right+0.5f*gl_camera.right+0.5f*forward_direction;
+        pos2=gl_camera.eye+step*gl_camera.right+0.5f*gl_camera.right-0.5f*forward_direction;
+        x1=round(pos1[0]);
+        y1=round(pos1[1]);
+        z1=round(pos1[2]);
+        x2=round(pos2[0]);
+        y2=round(pos2[1]);
+        z2=round(pos2[2]);
+
+        tuple temp1(x1,y1,z1),temp2(x1,y1-1,z1),temp3(x2,y2,z2),temp4(x2,y2-1,z2);
+        iter1=scene.mSceneMap.find(temp1);
+        iter2=scene.mSceneMap.find(temp2);
+        iter3=scene.mSceneMap.find(temp3);
+        iter4=scene.mSceneMap.find(temp4);
+        if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
+                iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
+            return true;
+        else
+            return false;
+    }
+    if(direction==BACK)
+    {
+        pos1=gl_camera.eye+step*forward_direction-0.5f*forward_direction+0.5f*gl_camera.right;
+        pos2=gl_camera.eye+step*forward_direction-0.5f*forward_direction-0.5f*gl_camera.right;
+        x1=round(pos1[0]);
+        y1=round(pos1[1]);
+        z1=round(pos1[2]);
+        x2=round(pos2[0]);
+        y2=round(pos2[1]);
+        z2=round(pos2[2]);
+        tuple temp1(x1,y1,z1),temp2(x1,y1-1,z1),temp3(x2,y2,z2),temp4(x2,y2-1,z2);
+        iter1=scene.mSceneMap.find(temp1);
+        iter2=scene.mSceneMap.find(temp2);
+        iter3=scene.mSceneMap.find(temp3);
+        iter4=scene.mSceneMap.find(temp4);
+        if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
+                iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
+            return true;
+        else
+            return false;
+    }
+    if(direction==FORWARD)
+    {
+
+        pos1=gl_camera.eye+step*forward_direction+0.5f*forward_direction+0.5f*gl_camera.right;
+        pos2=gl_camera.eye+step*forward_direction+0.5f*forward_direction-0.5f*gl_camera.right;
+        x1=round(pos1[0]);
+        y1=round(pos1[1]);
+        z1=round(pos1[2]);
+        x2=round(pos2[0]);
+        y2=round(pos2[1]);
+        z2=round(pos2[2]);
+        tuple temp1(x1,y1,z1),temp2(x1,y1-1,z1),temp3(x2,y2,z2),temp4(x2,y2-1,z2);
+        iter1=scene.mSceneMap.find(temp1);
+        iter2=scene.mSceneMap.find(temp2);
+        iter3=scene.mSceneMap.find(temp3);
+        iter4=scene.mSceneMap.find(temp4);
+        if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
+                iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
+            return true;
+        else
+            return false;
+    }
+
+}
+bool MyGL::bottom_test()
+{
+    glm::vec3 forward_direction=glm::normalize(glm::vec3(gl_camera.look[0],0,gl_camera.look[2]));
+    glm::vec3 pos1,pos2,pos3,pos4;
+//    int x1=0,y1=0,z1=0,x2=0,y2=0,z2=0,x3=0,y3=0,z3=0,x4=0,y4=0,z4=0;
+    std::map<tuple, Block*>::iterator iter1,iter2,iter3,iter4;
+    pos1=gl_camera.eye-glm::vec3(0,1.5,0)+0.45f*forward_direction-0.45f*gl_camera.right;
+    pos2=gl_camera.eye-glm::vec3(0,1.5,0)+0.45f*forward_direction+0.45f*gl_camera.right;
+    pos3=gl_camera.eye-glm::vec3(0,1.5,0)-0.45f*forward_direction-0.45f*gl_camera.right;
+    pos4=gl_camera.eye-glm::vec3(0,1.5,0)-0.45f*forward_direction+0.45f*gl_camera.right;
+    tuple temp1(round(pos1[0]),round(pos1[1]),round(pos1[2]))\
+            ,temp2(round(pos2[0]),round(pos2[1]),round(pos2[2]))\
+            ,temp3(round(pos3[0]),round(pos3[1]),round(pos3[2]))\
+            ,temp4(round(pos4[0]),round(pos4[1]),round(pos4[2]));
+    iter1=scene.mSceneMap.find(temp1);
+    iter2=scene.mSceneMap.find(temp2);
+    iter3=scene.mSceneMap.find(temp3);
+    iter4=scene.mSceneMap.find(temp4);
+    if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
+            iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
+        return true;
+    else
+        return false;
+}
 
 void MyGL::keyPressEvent(QKeyEvent *e)
 {
-
-    float amount = 2.0f;
+    float amount = 0.2f;
     if(e->modifiers() & Qt::ShiftModifier){
-        amount = 10.0f;
+        amount = 2.0f;
     }
     // http://doc.qt.io/qt-5/qt.html#Key-enum
     // This could all be much more efficient if a switch
@@ -155,22 +429,40 @@ void MyGL::keyPressEvent(QKeyEvent *e)
         gl_camera.RotateAboutUp(amount);
     } else if (e->key() == Qt::Key_Up) {
         //gl_camera.RotateAboutRight(-amount);
-        gl_camera.TranslateAlongLook(amount);
+        if(collision_test(FORWARD,amount))
+            gl_camera.TranslateAlongLook(-0.05f);
+        else
+            gl_camera.TranslateAlongLook(amount);
     } else if (e->key() == Qt::Key_Down) {
         //gl_camera.RotateAboutRight(amount);
-        gl_camera.TranslateAlongLook(-amount);
+        if(collision_test(BACK,-amount))
+            gl_camera.TranslateAlongLook(0.05f);
+        else
+            gl_camera.TranslateAlongLook(-amount);
     } else if (e->key() == Qt::Key_1) {
         gl_camera.fovy += amount;
     } else if (e->key() == Qt::Key_2) {
         gl_camera.fovy -= amount;
     } else if (e->key() == Qt::Key_W) {
-        gl_camera.TranslateAlongLook(amount);
+        if(collision_test(FORWARD,amount))
+            gl_camera.TranslateAlongLook(-0.05f);
+        else
+            gl_camera.TranslateAlongLook(amount);
     } else if (e->key() == Qt::Key_S) {
-        gl_camera.TranslateAlongLook(-amount);
+        if(collision_test(BACK,-amount))
+            gl_camera.TranslateAlongLook(0.05f);
+        else
+            gl_camera.TranslateAlongLook(-amount);
     } else if (e->key() == Qt::Key_D) {
-        gl_camera.TranslateAlongRight(amount);
+        if(collision_test(RIGHT,amount))
+            gl_camera.TranslateAlongRight(-0.05f);
+        else
+            gl_camera.TranslateAlongRight(amount);
     } else if (e->key() == Qt::Key_A) {
-        gl_camera.TranslateAlongRight(-amount);
+        if(collision_test(LEFT,-amount))
+            gl_camera.TranslateAlongRight(0.05f);
+        else
+            gl_camera.TranslateAlongRight(-amount);
     } else if (e->key() == Qt::Key_Q) {
         gl_camera.TranslateAlongUp(-amount);
     } else if (e->key() == Qt::Key_E) {
@@ -185,22 +477,67 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     if (fabs(gl_camera.ref.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
     {
         //printf("0\n");
-        scene.GenerateBlocks(0);
+         std::map<tuple, Block*> New_map = scene.GenerateBlocks(0);
+        initializeGrid();
     }
     else if (fabs(gl_camera.ref.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
     {
         //printf("1\n");
-        scene.GenerateBlocks(1);
+        std::map<tuple, Block*> New_map = scene.GenerateBlocks(1);
+        initializeGrid();
+
     }
     else if (fabs(gl_camera.ref.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
     {
         //printf("2\n");
-        scene.GenerateBlocks(2);
+        std::map<tuple, Block*> New_map = scene.GenerateBlocks(2);
+        initializeGrid();
+
     }
     else if (fabs(gl_camera.ref.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
     {
         //printf("3\n");
-        scene.GenerateBlocks(3);
+        std::map<tuple, Block*> New_map = scene.GenerateBlocks(3);
+        initializeGrid();
+
+    }
+    //Test whether need to update the superchunk
+    if(gl_camera.eye.x - grid.start_pos[0] > 33 * 16){
+        // +x out of bounds
+//        std::cout<<"0\n";
+        grid.MoveUpdate(0, scene.mSceneMap);
+        this->update();
+    }
+    else if(gl_camera.eye.x - grid.start_pos[0] < 32 * 16){
+        // -x out of bounds
+//        std::cout<<"1\n";
+        grid.MoveUpdate(1, scene.mSceneMap);
+        this->update();
+    }
+    else if(gl_camera.eye.y - grid.start_pos[1] > 33 * 16){
+        // +y out of bounds
+//        std::cout<<"2\n";
+        grid.MoveUpdate(2, scene.mSceneMap);
+        this->update();
+    }
+    else if(gl_camera.eye.y - grid.start_pos[1] < 32 * 16){
+//        std::cout<<"3\n";
+        // -y out of bounds
+        grid.MoveUpdate(3, scene.mSceneMap);
+        this->update();
+    }
+    else if(gl_camera.eye.z - grid.start_pos[2] > 33 * 16){
+        // +z out of bounds
+//        std::cout<<"4\n";
+        grid.MoveUpdate(4, scene.mSceneMap);
+        this->update();
+
+    }
+    else if(gl_camera.eye.z - grid.start_pos[2] < 32 * 16){
+        // -z out of bounds
+//        std::cout<<"5\n";
+        grid.MoveUpdate(5, scene.mSceneMap);
+        this->update();
     }
 }
 void MyGL::mouseMoveEvent(QMouseEvent *event)
@@ -211,7 +548,8 @@ void MyGL::mouseMoveEvent(QMouseEvent *event)
         mouse_oldpos=event->pos();
         return;
     }
-    if(mouse_oldpos.x()==width()-1)
+    if(mouse_oldpos.x()==width()-1||mouse_oldpos.x()==0\
+            ||mouse_oldpos.y()==height()-1||mouse_oldpos.y()==0)
     {
         QCursor::setPos(width()/2,height()/2);
         mouse_oldpos=QPoint(width()/2,height()/2);
@@ -219,42 +557,84 @@ void MyGL::mouseMoveEvent(QMouseEvent *event)
     }
     QPoint p=event->pos()-mouse_oldpos;
     mouse_oldpos=event->pos();
-
     float delta_w=2*float(p.x())/float(width())*glm::length(gl_camera.H);
     float delta_h=2*float(p.y())/float(height())*glm::length(gl_camera.V);
     float theta=atan(delta_w/glm::length(gl_camera.ref-gl_camera.eye))*180/M_PI;
     float fai=atan(delta_h/glm::length(gl_camera.ref-gl_camera.eye))*180/M_PI;
     gl_camera.RotateAboutUp(-theta);
-    gl_camera.RecomputeAttributes();
     gl_camera.RotateAboutRight(-fai);
-
-//    gl_camera.SetRef(p.x(),p.y());
     gl_camera.RecomputeAttributes();
-    update();  // Calls paintGL, among other things
+    update();
 
     //printf("%f %f %d %f\n", gl_camera.ref.x, gl_camera.ref.z, scene.mMinXYZ.z, fabs(gl_camera.ref.z - scene.mMinXYZ.z));
     if (fabs(gl_camera.ref.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
     {
         //printf("0\n");
-        scene.GenerateBlocks(0);
+         std::map<tuple, Block*> New_map = scene.GenerateBlocks(0);
+        initializeGrid();
     }
     else if (fabs(gl_camera.ref.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
     {
         //printf("1\n");
-        scene.GenerateBlocks(1);
+        std::map<tuple, Block*> New_map = scene.GenerateBlocks(1);
+        initializeGrid();
+
     }
     else if (fabs(gl_camera.ref.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
     {
         //printf("2\n");
-        scene.GenerateBlocks(2);
+        std::map<tuple, Block*> New_map = scene.GenerateBlocks(2);
+        initializeGrid();
+
     }
     else if (fabs(gl_camera.ref.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
     {
         //printf("3\n");
-        scene.GenerateBlocks(3);
+        std::map<tuple, Block*> New_map = scene.GenerateBlocks(3);
+        initializeGrid();
+
     }
 }
 
+void MyGL::mousePressEvent(QMouseEvent *event)
+{
+    if(event->button()==Qt::LeftButton)
+    {
+        breakblocks(QPoint(width()/2,height()/2),MaxReachDistance);
+        update();
+    }
+    if(event->button()==Qt::RightButton)
+    {
+        addblocks(QPoint(width()/2,height()/2),MaxReachDistance);
+        update();
+    }
+
+}
+
+
 void MyGL::timerUpdate()
 {
+    if(!game_begin)
+        return;
+    if(bottom_test())
+    {
+        g_velocity=0;
+        timecount=0;
+    }
+    else
+    {
+        if(fabs(gl_camera.eye[1])>200)
+        {
+            QMessageBox::information(NULL,"Note","Falling out of the boundary!");
+            QApplication::quit();
+        }
+
+        float distance=g_velocity*(time_step)+0.5*gravity_acceleration*time_step*time_step;
+        gl_camera.eye[1]+=distance;
+        gl_camera.ref[1]+=distance;
+        gl_camera.RecomputeAttributes();
+        g_velocity+=gravity_acceleration*(time_step);
+        update();
+    }
+
 }

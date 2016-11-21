@@ -10,6 +10,7 @@ Camera::Camera():
     look = glm::vec3(0,0,-1);
     up = glm::vec3(0,1,0);
     right = glm::vec3(1,0,0);
+    gimblelock_angle=0;
 }
 
 Camera::Camera(unsigned int w, unsigned int h):
@@ -24,7 +25,9 @@ Camera::Camera(unsigned int w, unsigned int h, const glm::vec3 &e, const glm::ve
     far_clip(1000),
     eye(e),
     ref(r),
-    world_up(worldUp)
+    world_up(worldUp),
+    gimblelock_angle(0)
+
 {
     RecomputeAttributes();
 }
@@ -42,6 +45,7 @@ Camera::Camera(const Camera &c):
     up(c.up),
     right(c.right),
     world_up(c.world_up),
+    gimblelock_angle(c.gimblelock_angle),
     V(c.V),
     H(c.H)
 {}
@@ -75,16 +79,22 @@ void Camera::RotateAboutUp(float deg)
 }
 void Camera::RotateAboutRight(float deg)
 {
+    if(gimblelock_angle+deg>85||gimblelock_angle+deg<-85)
+        return;
+
     glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(deg), right);
     ref = ref - eye;
     ref = glm::vec3(rotation * glm::vec4(ref, 1));
     ref = ref + eye;
+    gimblelock_angle+=deg;
     RecomputeAttributes();
+
 }
 
 void Camera::TranslateAlongLook(float amt)
 {
     glm::vec3 translation = look * amt;
+    translation[1]=0;
     eye += translation;
     ref += translation;
 }
@@ -100,16 +110,4 @@ void Camera::TranslateAlongUp(float amt)
     glm::vec3 translation = up * amt;
     eye += translation;
     ref += translation;
-}
-void Camera::SetRef(int x, int y)
-{
-    float NDC_X=2*float(x)/float(width)-1;
-    float NDC_Y=1-2*float(y)/float(height);
-    NDC_X/=10.0f;
-    NDC_Y/=10.0f;
-    glm::vec3 p=ref+NDC_X*H+NDC_Y*V;
-
-
-    ref=p;
-    RecomputeAttributes();
 }

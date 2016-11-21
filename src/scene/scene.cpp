@@ -2,7 +2,7 @@
 
 #include <scene/cube.h>
 
-Scene::Scene() : mMinXYZ(0, -1, 0), mMaxXYZ(1, 8, 10), mPerlinNoise(1.0, 1.0, 10.0, 6), mRefreshDistance(5.0), mNumRowNewBlocks(10)
+Scene::Scene() : mMinXYZ(0, -1, 0), mMaxXYZ(1, 8, 10), mPerlinNoise(0.5, 1.0, 10.0, 6), mRefreshDistance(5.0), mNumRowNewBlocks(10)
 {
 
 }
@@ -39,8 +39,9 @@ void Scene::Create()
     }
 }
 
-void Scene::GenerateBlocks(int direction)
+std::map<tuple, Block*> Scene::GenerateBlocks(int direction)
 {
+    std::map<tuple, Block*> New_map;
     if (direction == 0)
     {
         for (int i = mMinXYZ.x - 1; i > mMinXYZ.x - 1 - mNumRowNewBlocks; i--)
@@ -52,6 +53,7 @@ void Scene::GenerateBlocks(int direction)
                 {
                     Block* pBlock = new Block(glm::ivec3(i, k, j));
                     tuple tempTuple(i, k, j);
+                    New_map.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
                     mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
                 }
             }
@@ -69,6 +71,7 @@ void Scene::GenerateBlocks(int direction)
                 {
                     Block* pBlock = new Block(glm::ivec3(i, k, j));
                     tuple tempTuple(i, k, j);
+                    New_map.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
                     mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
                 }
             }
@@ -86,6 +89,7 @@ void Scene::GenerateBlocks(int direction)
                 {
                     Block* pBlock = new Block(glm::ivec3(i, k, j));
                     tuple tempTuple(i, k, j);
+                    New_map.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
                     mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
                 }
             }
@@ -103,11 +107,13 @@ void Scene::GenerateBlocks(int direction)
                 {
                     Block* pBlock = new Block(glm::ivec3(i, k, j));
                     tuple tempTuple(i, k, j);
+                    New_map.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
                     mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
                 }
             }
         }
         mMaxXYZ.z = mMaxXYZ.z + mNumRowNewBlocks;
     }
+    return New_map;
 }
 
