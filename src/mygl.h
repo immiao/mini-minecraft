@@ -70,6 +70,7 @@ public:
     void addblocks(QPoint screen_pos,int distance_max);
 
     void Keyevents();
+
     bool boundarytest();
     bool collision_test(int direction,float step);
     bool bottom_test();

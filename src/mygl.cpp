@@ -421,25 +421,6 @@ void MyGL::Keyevents()
         gl_camera.fovy += amount;
     if (keyboard[7])            //Key_2
         gl_camera.fovy -= amount;
-    if (keyboard[8])            //Key_3
-    {
-        QMessageBox::information(NULL,"Note","Walking Mode");
-        gl_camera = Camera(this->width(), this->height(),\
-                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
-                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
-                           glm::vec3(0,1,0));
-        gl_camera.cameramode=WALKING_MODE;
-    }
-    if (keyboard[9])            //Key_4
-    {
-        QMessageBox::information(NULL,"Note","Flying Mode");
-        gl_camera = Camera(this->width(), this->height(),\
-                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
-                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
-                           glm::vec3(0,1,0));
-        gl_camera.cameramode=FLYING_MODE;
-
-    }
     if (keyboard[10])           //Key_W
     {
         if(gl_camera.cameramode==FLYING_MODE)
@@ -508,7 +489,7 @@ void MyGL::Keyevents()
                            glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
                            glm::vec3(0,1,0));
     gl_camera.RecomputeAttributes();
-
+    update();
     //printf("%f %f %d %f\n", gl_camera.ref.x, gl_camera.ref.z, scene.mMinXYZ.z, fabs(gl_camera.ref.z - scene.mMinXYZ.z));
     if (fabs(gl_camera.ref.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
     {
@@ -605,9 +586,19 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     } else if (e->key() == Qt::Key_2) {
         keyboard[7]=true;
     } else if (e->key() == Qt::Key_3) {
-        keyboard[8]=true;
+        QMessageBox::information(NULL,"Note","Walking Mode");
+        gl_camera = Camera(this->width(), this->height(),\
+                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
+                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
+                           glm::vec3(0,1,0));
+        gl_camera.cameramode=WALKING_MODE;
     } else if (e->key() == Qt::Key_4) {
-        keyboard[9]=true;
+        QMessageBox::information(NULL,"Note","Flying Mode");
+        gl_camera = Camera(this->width(), this->height(),\
+                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
+                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
+                           glm::vec3(0,1,0));
+        gl_camera.cameramode=FLYING_MODE;
     } else if (e->key() == Qt::Key_W) {
         keyboard[10]=true;
     } else if (e->key() == Qt::Key_S) {
@@ -748,11 +739,12 @@ void MyGL::mousePressEvent(QMouseEvent *event)
 
 void MyGL::timerUpdate()
 {
+    Keyevents();
     if(!game_begin)
         return;
     if(gl_camera.cameramode==FLYING_MODE)
         return;
-    Keyevents();
+
     if(boundarytest())
     {
         QMessageBox::information(NULL,"Note","Falling out of the boundary!");
