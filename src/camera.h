@@ -21,7 +21,6 @@ public:
 
     //Computed attributes
     float aspect;
-    float gimblelock_angle;
 
     int cameramode;//1 means walking mode, 2 means flying mode
 
