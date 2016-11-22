@@ -15,9 +15,8 @@ MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
       gl_camera(), geom_cube(this),center(this),T(this),
       prog_lambert(this), prog_flat(this), prog_new(this),
-      key1(Qt::Key_unknown),key2(Qt::Key_unknown),
       grid(this),mousemove(false),game_begin(false),jump_state(false),\
-      timecount(0),g_velocity(0),external_force_acceleration(-gravity_acceleration),\
+      g_velocity(0),external_force_acceleration(-gravity_acceleration),\
       character_size(0,0,0)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -82,6 +81,9 @@ void MyGL::initializeGL()
 
     game_begin=true;
     character_size=glm::vec3(0.6,2,0.6);
+    for(int i=0;i<25;i++)
+        keyboard[i]=false;
+
     scene.Create();
     center.InitializeScreenSize(width(),height());
     T.InitializeScreenSize(width(),height());
@@ -123,6 +125,7 @@ void MyGL::paintGL()
 
 
     center.create();
+    T.create();
 
     prog_flat.setViewProjMatrix(glm::mat4(1));
     prog_flat.setModelMatrix(glm::mat4(1));
@@ -343,16 +346,15 @@ bool MyGL::bottom_test()
 {
     glm::vec3 forward_direction=glm::normalize(glm::vec3(gl_camera.look[0],0,gl_camera.look[2]));
     glm::vec3 pos1,pos2,pos3,pos4;
-//    int x1=0,y1=0,z1=0,x2=0,y2=0,z2=0,x3=0,y3=0,z3=0,x4=0,y4=0,z4=0;
     std::map<tuple, Block*>::iterator iter1,iter2,iter3,iter4;
-    pos1=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)+0.45f*character_size[2]*forward_direction\
-            -0.45f*character_size[0]*gl_camera.right;
-    pos2=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)+0.45f*character_size[2]*forward_direction\
-            +0.45f*character_size[0]*gl_camera.right;
-    pos3=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)-0.45f*character_size[2]*forward_direction\
-            -0.45f*character_size[0]*gl_camera.right;
-    pos4=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)-0.45f*character_size[2]*forward_direction\
-            +0.45f*character_size[0]*gl_camera.right;
+    pos1=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)+0.4f*character_size[2]*forward_direction\
+            -0.4f*character_size[0]*gl_camera.right;
+    pos2=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)+0.4f*character_size[2]*forward_direction\
+            +0.4f*character_size[0]*gl_camera.right;
+    pos3=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)-0.4f*character_size[2]*forward_direction\
+            -0.4f*character_size[0]*gl_camera.right;
+    pos4=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)-0.4f*character_size[2]*forward_direction\
+            +0.4f*character_size[0]*gl_camera.right;
     tuple temp1(round(pos1[0]),round(pos1[1]),round(pos1[2]))\
             ,temp2(round(pos2[0]),round(pos2[1]),round(pos2[2]))\
             ,temp3(round(pos3[0]),round(pos3[1]),round(pos3[2]))\
@@ -378,26 +380,19 @@ bool MyGL::boundarytest()
     return false;
 
 }
-
-void MyGL::keyPressEvent(QKeyEvent *e)
+void MyGL::Keyevents()
 {
-    float amount = 0.15f;
-    if(e->modifiers() & Qt::ShiftModifier){
-        amount = 2.0f;
-    }
-
-    // http://doc.qt.io/qt-5/qt.html#Key-enum
-    // This could all be much more efficient if a switch
-    // statement were used, but I really dislike their
-    // syntax so I chose to be lazy and use a long
-    // chain of if statements instead
-    if (e->key() == Qt::Key_Escape) {
+    float amount=0.05f;
+    if(keyboard[0])
+        amount=2.0f;
+    if(keyboard[1])             //  Key_Escape
         QApplication::quit();
-    } else if (e->key() == Qt::Key_Right) {
+    if(keyboard[2])             //  Key_Right
         gl_camera.RotateAboutUp(-amount);
-    } else if (e->key() == Qt::Key_Left) {
+    if(keyboard[3])             //Key_Left
         gl_camera.RotateAboutUp(amount);
-    } else if (e->key() == Qt::Key_Up) {
+    if(keyboard[4])             //Key_Up
+    {
         //gl_camera.RotateAboutRight(-amount);
         if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongLook(amount);
@@ -408,7 +403,9 @@ void MyGL::keyPressEvent(QKeyEvent *e)
             else
                 gl_camera.TranslateAlongLook(amount);
         }
-    } else if (e->key() == Qt::Key_Down) {
+    }
+    if (keyboard[5])            //Key_Down
+    {
         //gl_camera.RotateAboutRight(amount);
         if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongLook(-amount);
@@ -419,18 +416,22 @@ void MyGL::keyPressEvent(QKeyEvent *e)
             else
                 gl_camera.TranslateAlongLook(-amount);
         }
-    } else if (e->key() == Qt::Key_1) {
+    }
+    if (keyboard[6])            //Key_1
         gl_camera.fovy += amount;
-    } else if (e->key() == Qt::Key_2) {
+    if (keyboard[7])            //Key_2
         gl_camera.fovy -= amount;
-    } else if (e->key() == Qt::Key_3) {
+    if (keyboard[8])            //Key_3
+    {
         QMessageBox::information(NULL,"Note","Walking Mode");
         gl_camera = Camera(this->width(), this->height(),\
                            glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
                            glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
                            glm::vec3(0,1,0));
         gl_camera.cameramode=WALKING_MODE;
-    } else if (e->key() == Qt::Key_4) {
+    }
+    if (keyboard[9])            //Key_4
+    {
         QMessageBox::information(NULL,"Note","Flying Mode");
         gl_camera = Camera(this->width(), this->height(),\
                            glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
@@ -438,67 +439,75 @@ void MyGL::keyPressEvent(QKeyEvent *e)
                            glm::vec3(0,1,0));
         gl_camera.cameramode=FLYING_MODE;
 
-    } else if (e->key() == Qt::Key_W) {
+    }
+    if (keyboard[10])           //Key_W
+    {
         if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongLook(amount);
         else
         {
             if(collision_test(FORWARD,amount))
-                gl_camera.TranslateAlongLook(-0.05f);
+                gl_camera.TranslateAlongLook(-0.5*character_size[2]);
             else
                 gl_camera.TranslateAlongLook(amount);
         }
-    } else if (e->key() == Qt::Key_S) {
+    }
+    if (keyboard[11])           //Key_S
+    {
         if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongLook(-amount);
         else
         {
             if(collision_test(BACK,-amount))
-                gl_camera.TranslateAlongLook(0.05f);
+                gl_camera.TranslateAlongLook(0.5*character_size[2]);
             else
                 gl_camera.TranslateAlongLook(-amount);
         }
-
-    } else if (e->key() == Qt::Key_D) {
+    }
+    if (keyboard[12])           //Key_D
+    {
         if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongRight(amount);
         else
         {
             if(collision_test(RIGHT,amount))
-                gl_camera.TranslateAlongRight(-0.05f);
+                gl_camera.TranslateAlongRight(-0.5*character_size[0]);
             else
                 gl_camera.TranslateAlongRight(amount);
         }
-    } else if (e->key() == Qt::Key_A) {
+    }
+    if (keyboard[13])           //Key_A
+    {
         if(gl_camera.cameramode==FLYING_MODE)
             gl_camera.TranslateAlongRight(-amount);
         else
         {
             if(collision_test(LEFT,-amount))
-                gl_camera.TranslateAlongRight(0.05f);
+                gl_camera.TranslateAlongRight(0.5*character_size[0]);
             else
                 gl_camera.TranslateAlongRight(-amount);
         }
-//    } else if (e->key() == Qt::Key_Q) {
+    }
+//    if(keyboard[14])            //Key_Q
 //        gl_camera.TranslateAlongUp(-amount);
-//    } else if (e->key() == Qt::Key_E) {
+//    if(keyboard[15])            //Key_E
 //        gl_camera.TranslateAlongUp(amount);
-    } else if(e->key()==Qt::Key_Space){
+    if(keyboard[16])              //Key_Space
+    {
         if(gl_camera.cameramode==WALKING_MODE)
             if(!jump_state)
             {
-                g_velocity=2.0f;
+                g_velocity=1.5f;
                 external_force_acceleration=2.0f;
                 jump_state=true;
             }
-    } else if (e->key() == Qt::Key_R) {
+    }
+    if (keyboard[17])             //Key_R
         gl_camera = Camera(this->width(), this->height(),\
                            glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
                            glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
                            glm::vec3(0,1,0));
-    }
     gl_camera.RecomputeAttributes();
-    update();  // Calls paintGL, among other things
 
     //printf("%f %f %d %f\n", gl_camera.ref.x, gl_camera.ref.z, scene.mMinXYZ.z, fabs(gl_camera.ref.z - scene.mMinXYZ.z));
     if (fabs(gl_camera.ref.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
@@ -566,6 +575,57 @@ void MyGL::keyPressEvent(QKeyEvent *e)
         grid.MoveUpdate(5, scene.mSceneMap);
         this->update();
     }
+
+
+}
+
+void MyGL::keyPressEvent(QKeyEvent *e)
+{
+
+    if(e->modifiers() & Qt::ShiftModifier){
+        keyboard[0]=true;
+
+    // http://doc.qt.io/qt-5/qt.html#Key-enum
+    // This could all be much more efficient if a switch
+    // statement were used, but I really dislike their
+    // syntax so I chose to be lazy and use a long
+    // chain of if statements instead
+    } else if (e->key() == Qt::Key_Escape) {
+        keyboard[1]=true;
+    } else if (e->key() == Qt::Key_Right) {
+        keyboard[2]=true;
+    } else if (e->key() == Qt::Key_Left) {
+        keyboard[3]=true;
+    } else if (e->key() == Qt::Key_Up) {
+        keyboard[4]=true;
+    } else if (e->key() == Qt::Key_Down) {
+        keyboard[5]=true;
+    } else if (e->key() == Qt::Key_1) {
+        keyboard[6]=true;
+    } else if (e->key() == Qt::Key_2) {
+        keyboard[7]=true;
+    } else if (e->key() == Qt::Key_3) {
+        keyboard[8]=true;
+    } else if (e->key() == Qt::Key_4) {
+        keyboard[9]=true;
+    } else if (e->key() == Qt::Key_W) {
+        keyboard[10]=true;
+    } else if (e->key() == Qt::Key_S) {
+        keyboard[11]=true;
+    } else if (e->key() == Qt::Key_D) {
+        keyboard[12]=true;
+    } else if (e->key() == Qt::Key_A) {
+        keyboard[13]=true;
+    } else if (e->key() == Qt::Key_Q) {
+        keyboard[14]=true;
+    } else if (e->key() == Qt::Key_E) {
+        keyboard[15]=true;
+    } else if(e->key()==Qt::Key_Space){
+        keyboard[16]=true;
+    } else if (e->key() == Qt::Key_R) {
+        keyboard[17]=true;
+    }
+
 }
 void MyGL::mouseMoveEvent(QMouseEvent *event)
 {     
@@ -622,6 +682,53 @@ void MyGL::mouseMoveEvent(QMouseEvent *event)
 
     }
 }
+void MyGL::keyReleaseEvent(QKeyEvent *e)
+{
+    if(e->modifiers() & Qt::ShiftModifier){
+        keyboard[0]=false;
+
+    // http://doc.qt.io/qt-5/qt.html#Key-enum
+    // This could all be much more efficient if a switch
+    // statement were used, but I really dislike their
+    // syntax so I chose to be lazy and use a long
+    // chain of if statements instead
+    } else if (e->key() == Qt::Key_Escape) {
+        keyboard[1]=false;
+    } else if (e->key() == Qt::Key_Right) {
+        keyboard[2]=false;
+    } else if (e->key() == Qt::Key_Left) {
+        keyboard[3]=false;
+    } else if (e->key() == Qt::Key_Up) {
+        keyboard[4]=false;
+    } else if (e->key() == Qt::Key_Down) {
+        keyboard[5]=false;
+    } else if (e->key() == Qt::Key_1) {
+        keyboard[6]=false;
+    } else if (e->key() == Qt::Key_2) {
+        keyboard[7]=false;
+    } else if (e->key() == Qt::Key_3) {
+        keyboard[8]=false;
+    } else if (e->key() == Qt::Key_4) {
+        keyboard[9]=false;
+    } else if (e->key() == Qt::Key_W) {
+        keyboard[10]=false;
+    } else if (e->key() == Qt::Key_S) {
+        keyboard[11]=false;
+    } else if (e->key() == Qt::Key_D) {
+        keyboard[12]=false;
+    } else if (e->key() == Qt::Key_A) {
+        keyboard[13]=false;
+    } else if (e->key() == Qt::Key_Q) {
+        keyboard[14]=false;
+    } else if (e->key() == Qt::Key_E) {
+        keyboard[15]=false;
+    } else if(e->key()==Qt::Key_Space){
+        keyboard[16]=false;
+    } else if (e->key() == Qt::Key_R) {
+        keyboard[17]=false;
+    }
+
+}
 
 void MyGL::mousePressEvent(QMouseEvent *event)
 {
@@ -645,6 +752,7 @@ void MyGL::timerUpdate()
         return;
     if(gl_camera.cameramode==FLYING_MODE)
         return;
+    Keyevents();
     if(boundarytest())
     {
         QMessageBox::information(NULL,"Note","Falling out of the boundary!");
@@ -655,10 +763,13 @@ void MyGL::timerUpdate()
     update();
     if(bottom_test())
     {
-        g_velocity=0;
-        timecount=0;
-        external_force_acceleration=-gravity_acceleration;
-        jump_state=false;
+        if(g_velocity<=0)
+        {
+            g_velocity=0;
+            external_force_acceleration=-gravity_acceleration;
+            if(!keyboard[16])
+                jump_state=false;
+        }
     }
     else
     {
