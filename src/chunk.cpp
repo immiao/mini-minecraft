@@ -14,8 +14,8 @@
 
 struct VertexData{
     glm::vec4 pos;
-    glm::ivec4 nor;
-    glm::vec4 col;
+    glm::vec4 nor;
+    glm::vec2 uv;
 };
 
 chunk::chunk(GLWidget277* context)
@@ -30,7 +30,6 @@ chunk::chunk(GLWidget277* context)
 chunk::~chunk(){
     context->glDeleteBuffers(1,&vbo);
 }
-
 int chunk::get(int x, int y, int z){
     return block[x][y][z];
 }
@@ -50,104 +49,173 @@ void chunk::update(){
                 int type = block[x][y][z];
                 VertexData vert;
                 //Empty Block?
-                if(!type)
+                if(type == 0)
                     continue;
-                //set the color of the vertexData
-                vert.col = (glm::vec4 (0.2f, 1.0f, 0.6f,      1));
+                //create a offset to decide real UV
+                glm::vec2 offset_top = glm::vec2(0.0f, 0.0f);
+                glm::vec2 offset_bottom = glm::vec2(0.0f, 0.0f);
+                glm::vec2 offset_side = glm::vec2(0.0f, 0.0f);
+                if(type == 1){
+                    //DIRT:
+                    offset_top += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+                    offset_top += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+                    offset_side += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+                    offset_side += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+                    offset_bottom += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+                    offset_bottom += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+                }
+                else if(type == 2){
+                    //Grass:
+                    //Grass Top
+                    offset_top += 8.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+                    offset_top += 2.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+                    //Grass Side
+                    offset_side += 3.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+                    offset_side += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+                    //Grass Bottom
+                    offset_bottom += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+                    offset_bottom += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+                }
+                else if(type == 3){
+                    //Stone:
+                    offset_top += 1.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+                    offset_top += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+                    offset_side += 1.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+                    offset_side += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+                    offset_bottom += 1.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+                    offset_bottom += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+                }
+
                 //View from negative x
                 if(x > 0 && !block[x-1][y][z] || x == 0){
-                    vert.nor = (glm::ivec4(-1  ,0  ,0  ,      1));
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   type));
+                    vert.nor = (glm::vec4(-1.0f  ,0.0f  ,0.0f  ,      1));
+                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   1));
+                    vert.uv  = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   1));
+                    vert.uv  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   1));
+                    vert.uv  = glm::vec2(0.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   1));
+                    vert.uv  = glm::vec2(0.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   1));
+                    vert.uv  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   1));
+                    vert.uv  = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
                 }
                 //View from positive x
                 if(x < CX-1 && !block[x+1][y][z] || x == CX-1){
-                    vert.nor = (glm::ivec4(1   ,0  ,0  ,      1));
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   type));
+                    vert.nor = (glm::vec4(1.0f   ,0  ,0  ,      1));
+                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
                 }
-                //View from negative y
+                //View from negative y ------ Bottom
                 if(y > 0 && !block[x][y-1][z] || y == 0){
-                    vert.nor = (glm::ivec4(0   ,-1 ,0  ,      1));
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   type));
+                    vert.nor = (glm::vec4(0   ,-1.0f ,0  ,      1));
+                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_bottom;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_bottom;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_bottom;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_bottom;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_bottom;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_bottom;
                     vertex.push_back(vert);
                 }
-                //View from positive y
+                //View from positive y ------ Top
                 if(y < CY-1 && !block[x][y+1][z] || y == CY-1){
-                    vert.nor = (glm::ivec4(0   ,1  ,0  ,      1));
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   type));
+                    vert.nor = (glm::vec4(0   ,1.0f  ,0  ,      1));
+                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_top;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_top;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_top;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_top;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_top;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_top;
                     vertex.push_back(vert);
                 }
                 //View from nagative z
                 if(z > 0 && !block[x][y][z-1] || z == 0){
-                    vert.nor = (glm::ivec4(0   ,0  ,-1 ,      1));
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   type));
+                    vert.nor = (glm::vec4(0   ,0  ,-1.0f ,      1));
+                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
                 }
                 //View from positive z
                 if(z < CZ-1 && !block[x][y][z+1] || z == CZ-1){
-                    vert.nor = (glm::ivec4(0   ,0  ,1  ,      1));
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   type));
+                    vert.nor = (glm::vec4(0   ,0  ,1.0f  ,      1));
+                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   type));
+                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   1));
+                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_side;
                     vertex.push_back(vert);
                 }
             }
@@ -169,21 +237,21 @@ void chunk::render(ShaderProgram prog){
     context->glEnable(GL_DEPTH_TEST);
 
     context->glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    int attribute_coord = -1, attribute_normal = -1, attribute_color = -1;
+    GLint attribute_coord = -1, attribute_normal = -1, attribute_uv = -1;
     attribute_coord  = context->glGetAttribLocation(prog.prog, "vs_coord");
     attribute_normal = context->glGetAttribLocation(prog.prog, "vs_nor");
-    attribute_color  = context->glGetAttribLocation(prog.prog, "vs_col");
+    attribute_uv     = context->glGetAttribLocation(prog.prog, "vs_UV");
     context->glEnableVertexAttribArray(attribute_coord);
     context->glVertexAttribPointer(attribute_coord, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)0);
     context->glEnableVertexAttribArray(attribute_normal);
-    context->glVertexAttribIPointer(attribute_normal, 4, GL_INT, sizeof(VertexData), (void*)sizeof(glm::vec4));
-    context->glEnableVertexAttribArray(attribute_color);
-    context->glVertexAttribPointer(attribute_color, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)(sizeof(glm::vec4) + sizeof(glm::ivec4)));
+    context->glVertexAttribPointer(attribute_normal, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)sizeof(glm::vec4));
+    context->glEnableVertexAttribArray(attribute_uv);
+    context->glVertexAttribPointer(attribute_uv, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)(sizeof(glm::vec4) * 2));
     context->glDrawArrays(GL_TRIANGLES, 0, elements);
 
     if (attribute_coord != -1) context->glDisableVertexAttribArray(attribute_coord);
     if (attribute_normal != -1) context->glDisableVertexAttribArray(attribute_normal);
-    if (attribute_color != -1) context->glDisableVertexAttribArray(attribute_color);
+    if (attribute_uv != -1) context->glDisableVertexAttribArray(attribute_uv);
 
     context->glDisable(GL_CULL_FACE);
     context->glDisable(GL_DEPTH_TEST);
@@ -241,7 +309,6 @@ void superchunk::set(int x, int y, int z, int type){
 }
 
 void superchunk::render(ShaderProgram prog, glm::mat4 VP){
-
     for(int x = 0; x < SCX; x++)
         for(int y = 0; y < SCY; y++)
             for(int z = 0; z < SCZ; z++){
@@ -250,7 +317,7 @@ void superchunk::render(ShaderProgram prog, glm::mat4 VP){
                 if(distance > 32)
                     continue;
                 if(cl[x][y][z]){
-//                    std::cout<<x<<" "<<y<<" "<<z<<"\n";
+                    //std::cout<<x<<" "<<y<<" "<<z<<"\n";
                     glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(x * CX, y * CY, z * CZ) + start_pos);
                     prog.setModelMatrix(model);
 //                    //If the chunk is out of the screen, then we don't render it
@@ -269,6 +336,35 @@ void superchunk::render(ShaderProgram prog, glm::mat4 VP){
 //                        std::cout<<coords.x<<" "<<coords.y<<"    dasdasdasd:"<<x<<" "<<y<<" "<<z<<"\n";
 //                        continue;
 //                    }
+
+                    //Reset the type(mainly for stone and grass or dirt)
+                    glm::vec3 pos_origin = glm::vec3(x * CX, y * CY, z * CZ) + start_pos;
+                    for(int m = 0; m < CX; m++)
+                        for(int n = 0; n < CY; n++)
+                            for(int k = 0; k < CZ; k++){
+                                int block_type = cl[x][y][z]->block[m][n][k];
+
+                                if(block_type == 0){
+                                    continue;
+                                }
+                                //if(block_type is regular type(supposed <= 3))
+                                //DIRT is 1, GRASS is 2, STONE is 3
+                                if(block_type <= 3){
+                                    //if y < -16, then STONE
+                                    if((pos_origin.y + n) < -16 && block_type != 3){
+                                        cl[x][y][z]->set(m,n,k,3);
+                                    }
+                                    //else if there is a block above, DIRT
+                                    else if(get(pos_origin.x + m, pos_origin.y + n + 1, pos_origin.z + k) && block_type != 1){
+                                        cl[x][y][z]->set(m,n,k,1);
+                                    }
+                                    //else GRASS
+                                    else if(!get(pos_origin.x + m, pos_origin.y + n + 1, pos_origin.z + k) && block_type != 2){
+                                        cl[x][y][z]->set(m,n,k,2);
+                                    }
+                                }
+                            }
+
                     cl[x][y][z]->render(prog);
                 }
             }

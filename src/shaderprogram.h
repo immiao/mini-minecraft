@@ -25,7 +25,13 @@ public:
     int unifColor; // A handle for the "uniform" vec4 representing color of geometry in the vertex shader
 
     int unifTexture;
+    int unifNormalMap;
     GLuint textureHandle;
+    GLuint normalmapHandle;
+
+    //texture = 0, normal_map = 1;
+    int width0, height0, width1, height1;
+    unsigned char *image0, *image1;
 public:
     ShaderProgram(GLWidget277* context);
     // Sets up the requisite GL data and shaders from the given .glsl files
@@ -48,6 +54,7 @@ public:
     void printLinkInfoLog(int prog);
 
     void setTexture();
+    void deleteTexture();
     QString qTextFileRead(const char*);
 
 private:

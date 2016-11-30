@@ -75,6 +75,7 @@ public:
     bool collision_test(int direction,float step);
     bool bottom_test();
 
+    void test();
 
 protected:
     void keyPressEvent(QKeyEvent *e);

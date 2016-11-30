@@ -8,7 +8,7 @@
 #include <math.h>
 #include<QMessageBox>
 
-
+#include <SOIL.h>
 
 const int MaxReachDistance=8;
 MyGL::MyGL(QWidget *parent)
@@ -74,6 +74,8 @@ void MyGL::initializeGL()
     // This makes your geometry render green.
     prog_lambert.setGeometryColor(glm::vec4(0,1,0,1));
     prog_new.setGeometryColor(glm::vec4(0,1,0,1));
+
+    //prog_new.setTexture();
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
 //    vao.bind();
@@ -90,6 +92,8 @@ void MyGL::initializeGL()
     center.create();
     T.create();
     initializeGrid();
+
+    test();
 }
 
 void MyGL::resizeGL(int w, int h)
@@ -119,8 +123,10 @@ void MyGL::paintGL()
     prog_lambert.setViewProjMatrix(gl_camera.getViewProj());
     prog_new.setViewProjMatrix(gl_camera.getViewProj());
 
-
+    prog_new.setTexture();
     grid.render(prog_new, gl_camera.getViewProj());
+    prog_new.deleteTexture();
+
 //    GLDrawScene();
 
 
@@ -134,6 +140,9 @@ void MyGL::paintGL()
     prog_flat.draw(center);
     prog_flat.draw(T);
     glEnable(GL_DEPTH_TEST);
+
+    center.destroy();
+    T.destroy();
 
 }
 
@@ -768,4 +777,12 @@ void MyGL::timerUpdate()
         g_velocity+=gravity_acceleration*(time_step);
         external_force_acceleration=0;
     }
+}
+
+
+void MyGL::test(){
+//    int width, height;
+//    unsigned char* image = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
+//                                           &width, &height, 0, SOIL_LOAD_RGB);
+//    printf("SOIL results: '%s'\n", SOIL_last_result());
 }

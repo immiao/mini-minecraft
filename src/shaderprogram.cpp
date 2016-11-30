@@ -1,8 +1,8 @@
 #include "shaderprogram.h"
 #include <QFile>
 #include <QStringBuilder>
-#include<iostream>
-
+#include <iostream>
+#include <SOIL.h>
 
 ShaderProgram::ShaderProgram(GLWidget277 *context)
     : vertShader(), fragShader(), prog(),
@@ -68,7 +68,15 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifViewProj   = context->glGetUniformLocation(prog, "u_ViewProj");
     unifColor      = context->glGetUniformLocation(prog, "u_Color");
 
-    unifTexture    = context->glGetUniformLocation(prog, "u_Sampler");
+    unifTexture    = context->glGetUniformLocation(prog, "u_texture");
+    unifNormalMap  = context->glGetUniformLocation(prog, "u_texture_normal_map");
+
+    unsigned char* img0 = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
+                                           &width0, &height0, 0, SOIL_LOAD_RGB);
+    image0 = img0;
+    unsigned char* img1 = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_normals_all.png",
+                                           &width1, &height1, 0, SOIL_LOAD_RGB);
+    image1 = img1;
 }
 
 void ShaderProgram::useMe()
@@ -253,13 +261,34 @@ void ShaderProgram::printLinkInfoLog(int prog)
 }
 
 void ShaderProgram::setTexture(){
+    useMe();
     context->glGenTextures(1, &textureHandle);
-    context->glActiveTexture(GL_TEXTURE);
+    context->glActiveTexture(GL_TEXTURE0);
     context->glBindTexture(GL_TEXTURE_2D, textureHandle);
 
-    int width, height;
+//    int width, height;
     //We're missing dynamic library right now.
-    //unsigned char* image = SOIL_load_image("relative path to the image", &width, &height, 0, SOIL_LOAD_RGB);
+//    unsigned char* image = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
+//                                           &width, &height, 0, SOIL_LOAD_RGB);
+//    printf("SOIL results: '%s'\n", SOIL_last_result());
+    context->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width0, height0, 0, GL_RGB, GL_UNSIGNED_BYTE, image0);
+    context->glGenerateMipmap(GL_TEXTURE_2D);
+    context->glUniform1i(unifTexture, 0);
 
+    //normal map texture:
+    context->glGenTextures(1, &normalmapHandle);
+    context->glActiveTexture(GL_TEXTURE1);
+    context->glBindTexture(GL_TEXTURE_2D, normalmapHandle);
 
+//    int width1, height1;
+    context->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width1, height1, 0, GL_RGB, GL_UNSIGNED_BYTE, image1);
+    context->glGenerateMipmap(GL_TEXTURE_2D);
+    context->glUniform1i(unifNormalMap, 1);
+
+}
+
+void ShaderProgram::deleteTexture(){
+    useMe();
+    context->glDeleteTextures(1, &textureHandle);
+    context->glDeleteTextures(1, &normalmapHandle);
 }
