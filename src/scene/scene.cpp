@@ -2,7 +2,7 @@
 
 #include <scene/cube.h>
 
-Scene::Scene() : mMinXYZ(0, -1, 0), mMaxXYZ(1, 8, 10), mPerlinNoise(0.5, 1.0, 10.0, 6), mRefreshDistance(5.0), mNumRowNewBlocks(10)
+Scene::Scene() : mMinXYZ(0, -1, 0), mMaxXYZ(1, 8, 1), mPerlinNoise(0.5, 1.0, 10.0, 6, 40), mRefreshDistance(5), mNumRowNewBlocks(30)
 {
 
 }
