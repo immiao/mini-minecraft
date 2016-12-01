@@ -106,8 +106,8 @@ void MyGL::resizeGL(int w, int h)
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
 //    gl_camera = Camera(w, h);
-    gl_camera = Camera(w, h, glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
-                       glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1), glm::vec3(0,1,0));
+    gl_camera = Camera(w, h, glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, 20, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
+                       glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, 20, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1), glm::vec3(0,1,0));
     glm::mat4 viewproj = gl_camera.getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
@@ -505,33 +505,34 @@ void MyGL::Keyevents()
     gl_camera.RecomputeAttributes();
     update();
     //printf("%f %f %d %f\n", gl_camera.ref.x, gl_camera.ref.z, scene.mMinXYZ.z, fabs(gl_camera.ref.z - scene.mMinXYZ.z));
-    if (fabs(gl_camera.ref.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
+    if (fabs(gl_camera.eye.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
     {
         //printf("0\n");
          std::map<tuple, Block*> New_map = scene.GenerateBlocks(0);
         initializeGrid();
     }
-    else if (fabs(gl_camera.ref.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
+    else if (fabs(gl_camera.eye.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
     {
         //printf("1\n");
         std::map<tuple, Block*> New_map = scene.GenerateBlocks(1);
         initializeGrid();
 
     }
-    else if (fabs(gl_camera.ref.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
+    else if (fabs(gl_camera.eye.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
     {
         //printf("2\n");
         std::map<tuple, Block*> New_map = scene.GenerateBlocks(2);
         initializeGrid();
 
     }
-    else if (fabs(gl_camera.ref.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
+    else if (fabs(gl_camera.eye.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
     {
         //printf("3\n");
         std::map<tuple, Block*> New_map = scene.GenerateBlocks(3);
         initializeGrid();
 
     }
+    //printf("x:%f z:%f\n", gl_camera.eye.x, gl_camera.eye.z);
     //Test whether need to update the superchunk
     if(gl_camera.eye.x - grid.start_pos[0] > 33 * 16){
         // +x out of bounds
@@ -659,33 +660,6 @@ void MyGL::mouseMoveEvent(QMouseEvent *event)
     update();
 
     //printf("%f %f %d %f\n", gl_camera.ref.x, gl_camera.ref.z, scene.mMinXYZ.z, fabs(gl_camera.ref.z - scene.mMinXYZ.z));
-    if (fabs(gl_camera.ref.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
-    {
-        //printf("0\n");
-         std::map<tuple, Block*> New_map = scene.GenerateBlocks(0);
-        initializeGrid();
-    }
-    else if (fabs(gl_camera.ref.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
-    {
-        //printf("1\n");
-        std::map<tuple, Block*> New_map = scene.GenerateBlocks(1);
-        initializeGrid();
-
-    }
-    else if (fabs(gl_camera.ref.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
-    {
-        //printf("2\n");
-        std::map<tuple, Block*> New_map = scene.GenerateBlocks(2);
-        initializeGrid();
-
-    }
-    else if (fabs(gl_camera.ref.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
-    {
-        //printf("3\n");
-        std::map<tuple, Block*> New_map = scene.GenerateBlocks(3);
-        initializeGrid();
-
-    }
 }
 void MyGL::keyReleaseEvent(QKeyEvent *e)
 {
