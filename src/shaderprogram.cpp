@@ -72,7 +72,7 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifNormalMap  = context->glGetUniformLocation(prog, "u_texture_normal_map");
 
     unifViewPos    = context->glGetUniformLocation(prog, "u_ViewPos");
-    unsigned char* img0 = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
+    unsigned char* img0 = SOIL_load_image("../../miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
                                            &width0, &height0, 0, SOIL_LOAD_RGB);
     image0 = img0;
     unsigned char* img1 = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_normals_all.png",
