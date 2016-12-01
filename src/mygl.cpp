@@ -7,6 +7,7 @@
 #include <QKeyEvent>
 #include <math.h>
 #include<QMessageBox>
+#include <QDir>
 
 #include <SOIL.h>
 
@@ -92,7 +93,11 @@ void MyGL::initializeGL()
     center.create();
     T.create();
     initializeGrid();
-
+    QString s = QCoreApplication::applicationDirPath();
+    QString s1 = QCoreApplication::applicationFilePath();
+    QDir dir("F:/QT_project/Final_Project_Minicraft/build/debug");
+    s = dir.relativeFilePath("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_texture_all/minecraft_texture_all.png");
+    s1 = dir.relativeFilePath("F:/QT_project/Final_Project_Minicraft/miniminecraft/Simple OpenGL Image Library");
     test();
 }
 
@@ -122,7 +127,7 @@ void MyGL::paintGL()
 
     prog_lambert.setViewProjMatrix(gl_camera.getViewProj());
     prog_new.setViewProjMatrix(gl_camera.getViewProj());
-
+    prog_new.setViewPos(gl_camera.eye);
     prog_new.setTexture();
     grid.render(prog_new, gl_camera.getViewProj());
     prog_new.deleteTexture();

@@ -26,6 +26,9 @@ public:
 
     int unifTexture;
     int unifNormalMap;
+
+    int unifViewPos;
+
     GLuint textureHandle;
     GLuint normalmapHandle;
 
@@ -44,6 +47,8 @@ public:
     void setViewProjMatrix(const glm::mat4 &vp);
     // Pass the given color to this shader on the GPU
     void setGeometryColor(glm::vec4 color);
+    //
+    void setViewPos(glm::vec3 pos);
     // Draw the given object to our screen using this ShaderProgram's shaders
     void draw(Drawable &d);
     // Utility function used in create()

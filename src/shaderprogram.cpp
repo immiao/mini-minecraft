@@ -71,6 +71,7 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifTexture    = context->glGetUniformLocation(prog, "u_texture");
     unifNormalMap  = context->glGetUniformLocation(prog, "u_texture_normal_map");
 
+    unifViewPos    = context->glGetUniformLocation(prog, "u_ViewPos");
     unsigned char* img0 = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
                                            &width0, &height0, 0, SOIL_LOAD_RGB);
     image0 = img0;
@@ -139,6 +140,14 @@ void ShaderProgram::setGeometryColor(glm::vec4 color)
     if(unifColor != -1)
     {
         context->glUniform4fv(unifColor, 1, &color[0]);
+    }
+}
+
+void ShaderProgram::setViewPos(glm::vec3 pos){
+    useMe();
+
+    if(unifViewPos != -1){
+        context->glUniform3fv(unifViewPos, 1, &pos[0]);
     }
 }
 

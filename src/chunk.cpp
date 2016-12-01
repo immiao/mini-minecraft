@@ -16,6 +16,8 @@ struct VertexData{
     glm::vec4 pos;
     glm::vec4 nor;
     glm::vec2 uv;
+    glm::vec3 tang;
+    glm::vec3 bitang;
 };
 
 chunk::chunk(GLWidget277* context)
@@ -86,136 +88,418 @@ void chunk::update(){
                     offset_bottom += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
                 }
 
+                glm::vec3 pos1, pos2, pos3, edge1, edge2;
+                glm::vec2 uv1, uv2, uv3, deltaUV1, deltaUV2;
+                GLfloat f;
                 //View from negative x
                 if(x > 0 && !block[x-1][y][z] || x == 0){
                     vert.nor = (glm::vec4(-1.0f  ,0.0f  ,0.0f  ,      1));
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   1));
-                    vert.uv  = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
+                    //first triangle
+                    pos1 = glm::vec3(x-0.5f   ,y-0.5f  ,z-0.5f);
+                    pos2 = glm::vec3(x-0.5f   ,y-0.5f  ,z+0.5f);
+                    pos3 = glm::vec3(x-0.5f   ,y+0.5f  ,z-0.5f);
+                    uv1  = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
+                    uv2  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    uv3  = glm::vec2(0.0f, 0.0f) + offset_side;
+
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   1));
-                    vert.uv  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   1));
-                    vert.uv  = glm::vec2(0.0f, 0.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   1));
-                    vert.uv  = glm::vec2(0.0f, 0.0f) + offset_side;
+                    //second triangle
+                    pos1 = glm::vec3(x-0.5f   ,y+0.5f  ,z-0.5f);
+                    pos2 = glm::vec3(x-0.5f   ,y-0.5f  ,z+0.5f);
+                    pos3 = glm::vec3(x-0.5f   ,y+0.5f  ,z+0.5f);
+                    uv1  = glm::vec2(0.0f, 0.0f) + offset_side;
+                    uv2  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    uv3  = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
+
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   1));
-                    vert.uv  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   1));
-                    vert.uv  = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
                 }
                 //View from positive x
                 if(x < CX-1 && !block[x+1][y][z] || x == CX-1){
                     vert.nor = (glm::vec4(1.0f   ,0  ,0  ,      1));
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    //first triangle
+                    pos1 = glm::vec3(x+0.5f   ,y-0.5f  ,z-0.5f);
+                    pos2 = glm::vec3(x+0.5f   ,y+0.5f  ,z-0.5f);
+                    pos3 = glm::vec3(x+0.5f   ,y-0.5f  ,z+0.5f);
+                    uv1  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    uv2  = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
+                    uv3  = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
+
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
+                    //second triangle
+                    pos1 = glm::vec3(x+0.5f   ,y+0.5f  ,z-0.5f);
+                    pos2 = glm::vec3(x+0.5f   ,y+0.5f  ,z+0.5f);
+                    pos3 = glm::vec3(x+0.5f   ,y-0.5f  ,z+0.5f);
+                    uv1  = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
+                    uv2  = glm::vec2(0.0f, 0.0f) + offset_side;
+                    uv3  = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
+
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
                 }
                 //View from negative y ------ Bottom
                 if(y > 0 && !block[x][y-1][z] || y == 0){
                     vert.nor = (glm::vec4(0   ,-1.0f ,0  ,      1));
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_bottom;
+                    //first triangle
+                    pos1 = glm::vec3(x-0.5f   ,y-0.5f  ,z-0.5f);
+                    pos2 = glm::vec3(x+0.5f   ,y-0.5f  ,z-0.5f);
+                    pos3 = glm::vec3(x-0.5f   ,y-0.5f  ,z+0.5f);
+                    uv1  = glm::vec2(0.0f, 1.0f / 16.0f) + offset_bottom;
+                    uv2  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_bottom;
+                    uv3  = glm::vec2(0.0f, 0.0f) + offset_bottom;
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_bottom;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_bottom;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_bottom;
+                    //second triangle
+                    pos1 = glm::vec3(x+0.5f   ,y-0.5f  ,z-0.5f);
+                    pos2 = glm::vec3(x+0.5f   ,y-0.5f  ,z+0.5f);
+                    pos3 = glm::vec3(x-0.5f   ,y-0.5f  ,z+0.5f);
+                    uv1  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_bottom;
+                    uv2  = glm::vec2(1.0f / 16.0f, 0.0f) + offset_bottom;
+                    uv3  = glm::vec2(0.0f, 0.0f) + offset_bottom;
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_bottom;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_bottom;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
                 }
                 //View from positive y ------ Top
                 if(y < CY-1 && !block[x][y+1][z] || y == CY-1){
                     vert.nor = (glm::vec4(0   ,1.0f  ,0  ,      1));
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_top;
+                    //first triangle
+                    pos1 = glm::vec3(x-0.5f   ,y+0.5f  ,z-0.5f);
+                    pos2 = glm::vec3(x-0.5f   ,y+0.5f  ,z+0.5f);
+                    pos3 = glm::vec3(x+0.5f   ,y+0.5f  ,z-0.5f);
+                    uv1  = glm::vec2(0.0f, 0.0f) + offset_top;
+                    uv2  = glm::vec2(0.0f, 1.0f / 16.0f) + offset_top;
+                    uv3  = glm::vec2(1.0f / 16.0f, 0.0f) + offset_top;
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_top;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_top;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_top;
+                    //second triangle
+                    pos1 = glm::vec3(x+0.5f   ,y+0.5f  ,z-0.5f);
+                    pos2 = glm::vec3(x-0.5f   ,y+0.5f  ,z+0.5f);
+                    pos3 = glm::vec3(x+0.5f   ,y+0.5f  ,z+0.5f);
+                    uv1  = glm::vec2(1.0f / 16.0f, 0.0f) + offset_top;
+                    uv2  = glm::vec2(0.0f, 1.0f / 16.0f) + offset_top;
+                    uv3  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_top;
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_top;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_top;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
                 }
                 //View from nagative z
                 if(z > 0 && !block[x][y][z-1] || z == 0){
                     vert.nor = (glm::vec4(0   ,0  ,-1.0f ,      1));
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    //first triangle
+                    pos1 = glm::vec3(x-0.5f   ,y-0.5f  ,z-0.5f);
+                    pos2 = glm::vec3(x-0.5f   ,y+0.5f  ,z-0.5f);
+                    pos3 = glm::vec3(x+0.5f   ,y+0.5f  ,z-0.5f);
+                    uv1  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    uv2  = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
+                    uv3  = glm::vec2(0.0f, 0.0f) + offset_side;
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    //second triangle
+                    pos1 = glm::vec3(x-0.5f   ,y-0.5f  ,z-0.5f);
+                    pos2 = glm::vec3(x+0.5f   ,y+0.5f  ,z-0.5f);
+                    pos3 = glm::vec3(x+0.5f   ,y-0.5f  ,z-0.5f);
+                    uv1  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    uv2  = glm::vec2(0.0f, 0.0f) + offset_side;
+                    uv3  = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z-0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
                 }
                 //View from positive z
                 if(z < CZ-1 && !block[x][y][z+1] || z == CZ-1){
                     vert.nor = (glm::vec4(0   ,0  ,1.0f  ,      1));
-                    vert.pos = (glm::vec4(x-0.5f   ,y-0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
+                    //first triangle
+                    pos1 = glm::vec3(x-0.5f   ,y-0.5f  ,z+0.5f);
+                    pos2 = glm::vec3(x+0.5f   ,y-0.5f  ,z+0.5f);
+                    pos3 = glm::vec3(x-0.5f   ,y+0.5f  ,z+0.5f);
+                    uv1  = glm::vec2(0.0f, 1.0f / 16.0f) + offset_side;
+                    uv2  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    uv3  = glm::vec2(0.0f, 0.0f) + offset_side;
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y-0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    //second triangle
+                    pos1 = glm::vec3(x+0.5f   ,y-0.5f  ,z+0.5f);
+                    pos2 = glm::vec3(x+0.5f   ,y+0.5f  ,z+0.5f);
+                    pos3 = glm::vec3(x-0.5f   ,y+0.5f  ,z+0.5f);
+                    uv1  = glm::vec2(1.0f / 16.0f, 1.0f / 16.0f) + offset_side;
+                    uv2  = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
+                    uv3  = glm::vec2(0.0f, 0.0f) + offset_side;
+                    //Compute tang and bitang:
+                    edge1 = pos2 - pos1;
+                    edge2 = pos3 - pos1;
+                    deltaUV1 = uv2 - uv1;
+                    deltaUV2 = uv3 - uv1;
+                    f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                    vert.tang.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                    vert.tang.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                    vert.tang.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+                    vert.tang = glm::normalize(vert.tang);
+
+                    vert.bitang.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                    vert.bitang.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                    vert.bitang.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+                    vert.bitang = glm::normalize(vert.bitang);
+
+                    vert.pos = (glm::vec4(pos1  ,   1));
+                    vert.uv  = uv1;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x+0.5f   ,y+0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(1.0f / 16.0f, 0.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos2  ,   1));
+                    vert.uv  = uv2;
                     vertex.push_back(vert);
-                    vert.pos = (glm::vec4(x-0.5f   ,y+0.5f  ,z+0.5f  ,   1));
-                    vert.uv = glm::vec2(0.0f, 0.0f) + offset_side;
+                    vert.pos = (glm::vec4(pos3  ,   1));
+                    vert.uv  = uv3;
                     vertex.push_back(vert);
                 }
             }
@@ -237,21 +521,40 @@ void chunk::render(ShaderProgram prog){
     context->glEnable(GL_DEPTH_TEST);
 
     context->glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    GLint attribute_coord = -1, attribute_normal = -1, attribute_uv = -1;
+    GLint attribute_coord = -1, attribute_normal = -1, attribute_uv = -1, attribute_tangent = -1, attribute_bitangent = -1;
     attribute_coord  = context->glGetAttribLocation(prog.prog, "vs_coord");
     attribute_normal = context->glGetAttribLocation(prog.prog, "vs_nor");
     attribute_uv     = context->glGetAttribLocation(prog.prog, "vs_UV");
-    context->glEnableVertexAttribArray(attribute_coord);
-    context->glVertexAttribPointer(attribute_coord, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)0);
-    context->glEnableVertexAttribArray(attribute_normal);
-    context->glVertexAttribPointer(attribute_normal, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)sizeof(glm::vec4));
-    context->glEnableVertexAttribArray(attribute_uv);
-    context->glVertexAttribPointer(attribute_uv, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)(sizeof(glm::vec4) * 2));
+    attribute_tangent= context->glGetAttribLocation(prog.prog, "vs_tangent");
+    attribute_bitangent= context->glGetAttribLocation(prog.prog, "vs_bitangent");
+
+    if (attribute_coord != -1) {
+        context->glEnableVertexAttribArray(attribute_coord);
+        context->glVertexAttribPointer(attribute_coord, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)0);
+    }
+    if (attribute_normal != -1) {
+        context->glEnableVertexAttribArray(attribute_normal);
+        context->glVertexAttribPointer(attribute_normal, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)sizeof(glm::vec4));
+    }
+    if (attribute_uv != -1) {
+        context->glEnableVertexAttribArray(attribute_uv);
+        context->glVertexAttribPointer(attribute_uv, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)(sizeof(glm::vec4) * 2));
+    }
+    if (attribute_tangent != -1) {
+        context->glEnableVertexAttribArray(attribute_tangent);
+        context->glVertexAttribPointer(attribute_tangent, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)(sizeof(glm::vec4) * 2 + sizeof(glm::vec2)));
+    }
+    if (attribute_bitangent != -1) {
+        context->glEnableVertexAttribArray(attribute_bitangent);
+        context->glVertexAttribPointer(attribute_bitangent, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)(sizeof(glm::vec4) * 2 + sizeof(glm::vec2) + sizeof(glm::vec3)));
+    }
     context->glDrawArrays(GL_TRIANGLES, 0, elements);
 
     if (attribute_coord != -1) context->glDisableVertexAttribArray(attribute_coord);
     if (attribute_normal != -1) context->glDisableVertexAttribArray(attribute_normal);
     if (attribute_uv != -1) context->glDisableVertexAttribArray(attribute_uv);
+    if (attribute_tangent != -1) context->glDisableVertexAttribArray(attribute_tangent);
+    if (attribute_bitangent != -1) context->glDisableVertexAttribArray(attribute_bitangent);
 
     context->glDisable(GL_CULL_FACE);
     context->glDisable(GL_DEPTH_TEST);
