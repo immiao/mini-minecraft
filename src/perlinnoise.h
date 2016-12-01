@@ -12,6 +12,7 @@ public:
 
     int GetHeight(int i, int j) const;
     double GetValue(int i, int j, int period) const;
+    double Test(int i, int j);
 
 private:
 

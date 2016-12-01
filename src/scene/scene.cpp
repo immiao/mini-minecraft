@@ -2,7 +2,7 @@
 
 #include <scene/cube.h>
 
-Scene::Scene() : mMinXYZ(-10, -1, -10), mMaxXYZ(10, 8, 10), mPerlinNoise(0.5, 1.0, 10.0, 6, 40), mRefreshDistance(0.1), mNumRowNewBlocks(30)
+Scene::Scene() : mMinXYZ(-10, -20, -10), mMaxXYZ(50, 8, 50), mPerlinNoise(0.5, 1.0, 1.0, 6, 100), mRefreshDistance(0.1), mNumRowNewBlocks(30)
 {
 
 }
@@ -38,12 +38,11 @@ void Scene::Create()
         }
     }
 //    for (int i = 0; i < 10; i++)
-//        printf("16:%f 15:%f 14:%f\n", mPerlinNoise.GetHeight(i, 16), mPerlinNoise.GetHeight(i, 15), mPerlinNoise.GetHeight(i, 14));
+//        printf("16:%f 15:%f 14:%f\n", mPerlinNoise.Test(i, 16), mPerlinNoise.Test(i, 15), mPerlinNoise.Test(i, 14));
 }
 
 std::map<tuple, Block*> Scene::GenerateBlocks(int direction)
 {
-    printf("GENERATE\n");
     std::map<tuple, Block*> New_map;
     if (direction == 0)
     {
@@ -51,7 +50,7 @@ std::map<tuple, Block*> Scene::GenerateBlocks(int direction)
         {
             for (int j = mMinXYZ.z; j <= mMaxXYZ.z; j++)
             {
-                int height = mPerlinNoise.GetHeight(i, j);
+                int height = mPerlinNoise.GetHeight(i, j) - 20;
                 for (int k = mMinXYZ.y; k <= height; k++)
                 {
                     Block* pBlock = new Block(glm::ivec3(i, k, j));
