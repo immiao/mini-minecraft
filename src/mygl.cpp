@@ -79,7 +79,7 @@ void MyGL::initializeGL()
 //    vao.bind();
     glBindVertexArray(vao);
 
-    game_begin=true;
+
     character_size=glm::vec3(0.6,2,0.6);
     for(int i=0;i<25;i++)
         keyboard[i]=false;
@@ -90,6 +90,8 @@ void MyGL::initializeGL()
     center.create();
     T.create();
     initializeGrid();
+
+    game_begin=true;
 }
 
 void MyGL::resizeGL(int w, int h)
@@ -97,8 +99,8 @@ void MyGL::resizeGL(int w, int h)
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
 //    gl_camera = Camera(w, h);
-    gl_camera = Camera(w, h, glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, 20, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
-                       glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, 20, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1), glm::vec3(0,1,0));
+    gl_camera = Camera(w, h, glm::vec3(0, 20, 0),
+                       glm::vec3(1, 20, 1), glm::vec3(0,1,0));
     glm::mat4 viewproj = gl_camera.getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
@@ -124,8 +126,8 @@ void MyGL::paintGL()
 //    GLDrawScene();
 
 
-    center.create();
-    T.create();
+//    center.create();
+//    T.create();
 
     prog_flat.setViewProjMatrix(glm::mat4(1));
     prog_flat.setModelMatrix(glm::mat4(1));
@@ -491,29 +493,31 @@ void MyGL::Keyevents()
     gl_camera.RecomputeAttributes();
     update();
     //printf("%f %f %d %f\n", gl_camera.ref.x, gl_camera.ref.z, scene.mMinXYZ.z, fabs(gl_camera.ref.z - scene.mMinXYZ.z));
+
+    printf("x:%f y:%f z:%f\n", gl_camera.eye.x, gl_camera.eye.y, gl_camera.eye.z);
     if (fabs(gl_camera.eye.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
     {
-        //printf("0\n");
+        printf("0\n");
          std::map<tuple, Block*> New_map = scene.GenerateBlocks(0);
         initializeGrid();
     }
     else if (fabs(gl_camera.eye.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
     {
-        //printf("1\n");
+        printf("%f %f %f\n", gl_camera.eye.x, scene.mMaxXYZ.x, scene.mRefreshDistance);
         std::map<tuple, Block*> New_map = scene.GenerateBlocks(1);
         initializeGrid();
 
     }
     else if (fabs(gl_camera.eye.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
     {
-        //printf("2\n");
+        printf("2\n");
         std::map<tuple, Block*> New_map = scene.GenerateBlocks(2);
         initializeGrid();
 
     }
     else if (fabs(gl_camera.eye.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
     {
-        //printf("3\n");
+        printf("3\n");
         std::map<tuple, Block*> New_map = scene.GenerateBlocks(3);
         initializeGrid();
 
@@ -713,9 +717,10 @@ void MyGL::mousePressEvent(QMouseEvent *event)
 
 void MyGL::timerUpdate()
 {
-    Keyevents();
+
     if(!game_begin)
         return;
+    Keyevents();
     if(gl_camera.cameramode==FLYING_MODE)
         return;
 
