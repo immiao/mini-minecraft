@@ -51,6 +51,7 @@ private:
     float external_force_acceleration;
     float g_velocity;
 
+    int timeCount = 0;
 
 
 

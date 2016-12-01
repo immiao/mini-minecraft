@@ -28,6 +28,7 @@ public:
     int unifNormalMap;
 
     int unifViewPos;
+    int unifTime;
 
     GLuint textureHandle;
     GLuint normalmapHandle;
@@ -60,6 +61,8 @@ public:
 
     void setTexture();
     void deleteTexture();
+
+    void setTime(int timeCount);
     QString qTextFileRead(const char*);
 
 private:

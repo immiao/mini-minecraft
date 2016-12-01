@@ -7,7 +7,7 @@
 ShaderProgram::ShaderProgram(GLWidget277 *context)
     : vertShader(), fragShader(), prog(),
       attrPos(-1), attrNor(-1), attrCol(-1),
-      unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifColor(-1),
+      unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifColor(-1), unifTexture(-1), unifTime(-1),
       context(context)
 {}
 
@@ -72,7 +72,9 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifNormalMap  = context->glGetUniformLocation(prog, "u_texture_normal_map");
 
     unifViewPos    = context->glGetUniformLocation(prog, "u_ViewPos");
-    unsigned char* img0 = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
+    unifTime       = context->glGetUniformLocation(prog, "u_Time");
+
+    unsigned char* img0 = SOIL_load_image("../miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
                                            &width0, &height0, 0, SOIL_LOAD_RGB);
     image0 = img0;
     unsigned char* img1 = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_normals_all.png",
@@ -300,4 +302,10 @@ void ShaderProgram::deleteTexture(){
     useMe();
     context->glDeleteTextures(1, &textureHandle);
     context->glDeleteTextures(1, &normalmapHandle);
+}
+
+void ShaderProgram::setTime(int timeCount){
+    useMe();
+    GLint v0 = timeCount;
+    context->glUniform1i(unifTime, v0);
 }

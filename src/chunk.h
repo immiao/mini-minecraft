@@ -33,6 +33,8 @@ struct chunk{
     void set(int x, int y, int z, int type);
     void update();
     void render(ShaderProgram prog);
+    //set the offset of the texture
+    void setTextureOffset(float &cosine_power, glm::vec2 &, glm::vec2 &, glm::vec2 &, int type);
 };
 
 struct superchunk{

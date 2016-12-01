@@ -16,8 +16,8 @@ MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
       gl_camera(), geom_cube(this),center(this),T(this),
       prog_lambert(this), prog_flat(this), prog_new(this),
-      grid(this),mousemove(false),game_begin(false),jump_state(false),\
-      g_velocity(0),external_force_acceleration(-gravity_acceleration),\
+      grid(this),mousemove(false),game_begin(false),jump_state(false),
+      g_velocity(0),external_force_acceleration(-gravity_acceleration),
       character_size(0,0,0)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -719,6 +719,9 @@ void MyGL::timerUpdate()
 {
     if(!game_begin)
         return;
+    timeCount++;
+    prog_new.setTime(timeCount);
+
     Keyevents();
     if(gl_camera.cameramode==FLYING_MODE)
         return;
