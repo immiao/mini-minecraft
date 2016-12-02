@@ -1,6 +1,7 @@
 #include "block.h"
 
-Block::Block(glm::ivec3 position)
+Block::Block(glm::ivec3 position, BLOCK_TYPE type)
 {
     mPosition = position;
+    mType = LAVA;
 }

@@ -169,7 +169,8 @@ void MyGL::initializeGrid(){
         if(x >= grid.start_pos[0] && x <= (grid.start_pos[0] + 64 * 16) &&
                 y >= grid.start_pos[1] && y <= (grid.start_pos[1] + 64 * 16) &&
                 z >= grid.start_pos[2] && z <= (grid.start_pos[2] + 64 * 16)){
-            grid.set(x,y,z,int(1));
+            //grid.set(x,y,z,int(1));
+            grid.set(x, y, z, (int)(iter->second->mType));
         }
 //        glm::vec3 trans(std::get<0>(iter->first), std::get<1>(iter->first), std::get<2>(iter->first));
 //        prog_lambert.setModelMatrix(glm::translate(glm::mat4(), trans));
