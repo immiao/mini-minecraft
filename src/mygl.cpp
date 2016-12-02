@@ -384,7 +384,7 @@ bool MyGL::boundarytest()
 }
 void MyGL::Keyevents()
 {
-    float amount=0.05f;
+    float amount=0.5f;
     if(keyboard[0])
         amount=2.0f;
     if(keyboard[1])             //  Key_Escape

@@ -34,28 +34,13 @@ int PerlinNoise::GetHeight(int i, int j)
     //printf("%lf\n", t);
     t /= octaves;
 //    if (t > 1)
-//    printf("%lf\n", t);
+    //printf("%lf\n", t);
     t = (t + 1) * 0.5;
     t=pow(t,3.3);
     t *= scale;
     return t;
 }
 
-double PerlinNoise::GetDirection(int x, int y, int z)
-{
-    double t = 0.0f;
-    double _amplitude = 1;
-    double freq = frequency;
-
-    for(int k = 0; k < octaves; k++)
-    {
-        t += GetValue(x, y, z, 1 << (octaves - 1 - k)) * _amplitude;
-        _amplitude *= persistence;
-        freq *= 2;
-    }
-    t /= octaves;
-    return t;
-}
 
 double PerlinNoise::SCurve(double x)
 {
@@ -89,6 +74,46 @@ double PerlinNoise::GetValue(int i, int j, int period)
 //if (p0 > 1)
 //    printf("LERP:%d %d %f %f %f %f\n", i, i0, period, p0, SCurve(horizontal_blend), horizontal_blend);
     return Lerp(p0, p1, SCurve(vertical_blend));
+}
+
+double PerlinNoise::GetValue(double i, double j, int period)
+{
+    int i0 = (int)i / period * period;
+    if (i < 0) i0 -= period;
+    int i1 = i0 + period;
+    double horizontal_blend = (i - i0) / (double)period;
+
+    int j0 = (int)j / period * period;
+    if (j < 0) j0 -= period;
+    int j1 = j0 + period;
+    double vertical_blend = (j - j0) / (double)period;
+
+    double p00 = Noise(i0, j0);
+    double p10 = Noise(i1, j0);
+    double p01 = Noise(i0, j1);
+    double p11 = Noise(i1, j1);
+
+    double p0 = Lerp(p00, p10, SCurve(horizontal_blend));
+    double p1 = Lerp(p01, p11, SCurve(horizontal_blend));
+//if (p0 > 1)
+//    printf("LERP:%d %d %f %f %f %f\n", i, i0, period, p0, SCurve(horizontal_blend), horizontal_blend);
+    return Lerp(p0, p1, SCurve(vertical_blend));
+}
+
+double PerlinNoise::GetPerlinNoise(double i, double j)
+{
+    double t = 0.0f;
+    double _amplitude = 1;
+    double freq = frequency;
+
+    for(int k = 0; k < octaves; k++)
+    {
+        t += GetValue(i, j, 1 << (octaves - 1 - k)) * _amplitude;
+        _amplitude *= persistence;
+        freq *= 2;
+    }
+    t /= octaves;
+    return t;
 }
 
 double PerlinNoise::GetValue(int i, int j, int k, int period)

@@ -3,7 +3,7 @@
 #include <scene/cube.h>
 #include <time.h>
 
-Scene::Scene() : mMinXYZ(-10, -1, -10), mMaxXYZ(50, 8, 50), mPerlinNoise(0.5, 1.0, 1.0, 6, 100), mRefreshDistance(0.1), mNumRowNewBlocks(30)
+Scene::Scene() : mMinXYZ(-10, -128, -10), mMaxXYZ(50, 8, 50), mPerlinNoise(0.5, 1.0, 1.0, 6, 100), mRefreshDistance(-1), mNumRowNewBlocks(30)
 {
 
 }
@@ -23,6 +23,63 @@ void Scene::clear()
     mSceneMap.clear();
 }
 
+void Scene::Hollow(double centerx, double centery, double centerz, double radius)
+{
+    int minx = centerx - radius;
+    int miny = centery - radius;
+    int minz = centerz - radius;
+    int maxx = centerx + radius;
+    int maxy = centery + radius;
+    int maxz = centerz + radius;
+
+    for (int i = minx; i <= maxx; i++)
+        for (int j = miny; j <= maxy; j++)
+            for (int k = minz; k <= maxz; k++)
+            {
+                tuple tempTuple(i, j, k);
+                std::map<tuple, Block*>::iterator iter = mSceneMap.find(tempTuple);
+                if (iter != mSceneMap.end())
+                {
+                    mSceneMap.erase(iter);
+                    //printf("%d %d %d\n", i, j, k);
+                }
+            }
+}
+
+void Scene::GenerateWorm(double wormx, double wormy, double wormz)
+{
+    const int rr_beginSteps = 1000;
+    int steps = 0;
+    srand(time(NULL));
+    const double radius = 10.0f;
+    const double stepScale = 2.0f;
+    const double yScale = 0.3f;
+    PerlinNoise WormPerlinNoise(0.5, 1.0, 1.0, 6, 0);
+    while (1)
+    {
+        Hollow(wormx, wormy, wormz, radius);
+        if (steps > rr_beginSteps)
+        {
+            if ((rand() % 101 / 100.f) > 0.7f)
+                break;
+        }
+        double xx = wormx;
+        double yy = wormy;
+        double zz = wormz;
+
+        wormx += WormPerlinNoise.GetPerlinNoise(yy, zz) * stepScale;
+        wormy += WormPerlinNoise.GetPerlinNoise(xx, zz) * yScale;
+        wormz += WormPerlinNoise.GetPerlinNoise(xx, yy) * stepScale;
+        if (wormx < mMinXYZ.x) wormx = mMaxXYZ.x;
+        if (wormx > mMaxXYZ.x) wormx = mMinXYZ.x;
+        if (wormy < mMinXYZ.y) wormy = mMaxXYZ.y;
+        if (wormy > mMaxXYZ.y) wormy = mMinXYZ.y;
+        if (wormz < mMinXYZ.z) wormz = mMaxXYZ.z;
+        if (wormz > mMaxXYZ.z) wormz = mMinXYZ.z;
+        steps++;
+    }
+}
+
 void Scene::Create()
 {
     for (int i = mMinXYZ.x; i <= mMaxXYZ.x; i++)
@@ -38,26 +95,17 @@ void Scene::Create()
             }
         }
     }
-    bool IsWorm = false;
+    bool IsWorm = true;
     if (IsWorm)
     {
-        double wormx = (mMinXYZ.x + mMaxXYZ.x) * 0.5f;
-        double wormy = -32.f;
-        double wormz = (mMinXYZ.z + mMinXYZ.z) * 0.5f;
-
-        const int rr_beginSteps = 100;
-        int steps = 0;
-        srand(time(NULL));
-        while (1)
-        {
-            if (steps > rr_beginSteps)
-            {
-                if ((rand() % 101 / 100.f) > 0.7f)
-                    break;
-            }
-
-            steps++;
-        }
+        GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, 5.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
+        GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -32.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
+        GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -64.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
+        GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -96.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
+//        GenerateWorm(mMinXYZ.x, 5.f, mMinXYZ.z);
+//        GenerateWorm(mMinXYZ.x, 5.f, mMaxXYZ.z);
+//        GenerateWorm(mMaxXYZ.x, 5.f, mMinXYZ.z);
+//        GenerateWorm(mMaxXYZ.x, 5.f, mMaxXYZ.z);
     }
 //    for (int i = 0; i < 10; i++)
 //        printf("16:%f 15:%f 14:%f\n", mPerlinNoise.GetHeight(i, 16), mPerlinNoise.GetHeight(i, 15), mPerlinNoise.GetHeight(i, 14));

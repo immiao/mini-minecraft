@@ -12,8 +12,9 @@ public:
 
     int GetHeight(int i, int j);
     double GetValue(int i, int j, int period);
-    double GetDirection(int x, int y, int z);
+    double GetValue(double i, double j, int period);
     double GetValue(int x, int y, int z, int period);
+    double GetPerlinNoise(double i, double j);
     double SCurve(double x);
     double Lerp(double p0, double p1, double x);
 

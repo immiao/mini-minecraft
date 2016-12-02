@@ -752,6 +752,7 @@ void superchunk::set(int x, int y, int z, int type){
 }
 
 void superchunk::render(ShaderProgram prog, glm::mat4 VP){
+    //printf("%d %d %d\n", SCX, SCY, SCZ);
     for(int x = 0; x < SCX; x++)
         for(int y = 0; y < SCY; y++)
             for(int z = 0; z < SCZ; z++){
