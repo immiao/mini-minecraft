@@ -763,22 +763,20 @@ void superchunk::render(ShaderProgram prog, glm::mat4 VP){
                     //std::cout<<x<<" "<<y<<" "<<z<<"\n";
                     glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(x * CX, y * CY, z * CZ) + start_pos);
                     prog.setModelMatrix(model);
-//                    //If the chunk is out of the screen, then we don't render it
-//                    glm::vec3 center = start_pos + glm::vec3(x*16, y*16, z*16) + glm::vec3(8, 8, 8);
-//                    std::cout<<center.x<<" "<<center.y<<" "<<center.z<<" \n";
-//                    glm::vec4 coords = VP * model * glm::vec4(center, 1);
-//                    coords.x /= coords.w;
-//                    coords.y /= coords.w;
-//                    float diameter = sqrtf(CX * CX + CY * CY + CZ * CZ);
-////                    if(coords[2] < -diameter){
-////                        std::cout<<x<<" "<<y<<" "<<z<<"\n";
-////                        continue;
-////                    }
-//                    diameter /= fabsf(coords.w);
-//                    if(fabsf(coords.x) > 1 + diameter || fabsf(coords.y) > 1 + diameter){
-//                        std::cout<<coords.x<<" "<<coords.y<<"    dasdasdasd:"<<x<<" "<<y<<" "<<z<<"\n";
-//                        continue;
-//                    }
+
+                    //If the chunk is out of the screen, then we don't render it
+                    glm::vec3 center = glm::vec3(8,8,8);
+                    glm::vec4 coords = VP * model * glm::vec4(center, 1);
+                    coords.x /= coords.w;
+                    coords.y /= coords.w;
+                    float diameter = sqrtf(CX * CX + CY * CY + CZ * CZ);
+                    if(coords.z < -diameter){
+                        continue;
+                    }
+                    diameter /= fabsf(coords.w);
+                    if(fabsf(coords.x) > 1 + diameter || fabsf(coords.y) > 1 + diameter){
+                        continue;
+                    }
 
                     //Reset the type(mainly for stone and grass or dirt)
 //                    glm::vec3 pos_origin = glm::vec3(x * CX, y * CY, z * CZ) + start_pos;
