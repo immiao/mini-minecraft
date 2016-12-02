@@ -300,45 +300,70 @@ void MyGL::addblocks(QPoint screen_pos, int distance_max)
 }
 bool MyGL::collision_test(int direction,float step)
 {
-    glm::vec3 pos1,pos2;
-    glm::vec3 forward_direction=glm::normalize(glm::vec3(gl_camera.look[0],0,gl_camera.look[2]));
-    int x1=0,y1=0,z1=0,x2=0,y2=0,z2=0;
-    std::map<tuple, Block*>::iterator iter1,iter2,iter3,iter4;
+    glm::vec3 pos1,pos2,pos3,pos4,pos5,pos6,p1,p2;
+    glm::vec3 forward_direction=glm::normalize(glm::vec3(gl_camera.look[0],0,gl_camera.look[2])),\
+            worldup(0,1,0);
+    std::map<tuple, Block*>::iterator iter1,iter2,iter3,iter4,iter5,iter6;
     if(direction==LEFT)
     {
-        pos1=gl_camera.eye+step*gl_camera.right-0.5f*character_size[0]*gl_camera.right+0.5f*character_size[2]*forward_direction;
-        pos2=gl_camera.eye+step*gl_camera.right-0.5f*character_size[0]*gl_camera.right-0.5f*character_size[2]*forward_direction;
+        p1=gl_camera.eye+step*gl_camera.right-0.5f*character_size[0]*gl_camera.right+0.5f*character_size[2]*forward_direction;
+        p2=gl_camera.eye+step*gl_camera.right-0.5f*character_size[0]*gl_camera.right-0.5f*character_size[2]*forward_direction;
+        pos1=p1+(0.25f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos2=p2+(0.25f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos3=p1-0.25f*character_size[1]*worldup;
+        pos4=p2-0.25f*character_size[1]*worldup;
+        pos5=p1-(0.75f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos6=p2-(0.75f-BODYEDGE_ERROR)*character_size[1]*worldup;
     }
     if(direction==RIGHT)
     {
-        pos1=gl_camera.eye+step*gl_camera.right+0.5f*character_size[0]*gl_camera.right+0.5f*character_size[2]*forward_direction;
-        pos2=gl_camera.eye+step*gl_camera.right+0.5f*character_size[0]*gl_camera.right-0.5f*character_size[2]*forward_direction;
+        p1=gl_camera.eye+step*gl_camera.right+0.5f*character_size[0]*gl_camera.right+0.5f*character_size[2]*forward_direction;
+        p2=gl_camera.eye+step*gl_camera.right+0.5f*character_size[0]*gl_camera.right-0.5f*character_size[2]*forward_direction;
+        pos1=p1+(0.25f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos2=p2+(0.25f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos3=p1-0.25f*character_size[1]*worldup;
+        pos4=p2-0.25f*character_size[1]*worldup;
+        pos5=p1-(0.75f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos6=p2-(0.75f-BODYEDGE_ERROR)*character_size[1]*worldup;
     }
     if(direction==BACK)
     {
-        pos1=gl_camera.eye+step*forward_direction-0.5f*character_size[2]*forward_direction+0.5f*character_size[0]*gl_camera.right;
-        pos2=gl_camera.eye+step*forward_direction-0.5f*character_size[2]*forward_direction-0.5f*character_size[0]*gl_camera.right;
+        p1=gl_camera.eye+step*forward_direction-0.5f*character_size[2]*forward_direction+0.5f*character_size[0]*gl_camera.right;
+        p2=gl_camera.eye+step*forward_direction-0.5f*character_size[2]*forward_direction-0.5f*character_size[0]*gl_camera.right;
+        pos1=p1+(0.25f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos2=p2+(0.25f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos3=p1-0.25f*character_size[1]*worldup;
+        pos4=p2-0.25f*character_size[1]*worldup;
+        pos5=p1-(0.75f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos6=p2-(0.75f-BODYEDGE_ERROR)*character_size[1]*worldup;
     }
     if(direction==FORWARD)
     {
-
-        pos1=gl_camera.eye+step*forward_direction+0.5f*character_size[2]*forward_direction+0.5f*character_size[0]*gl_camera.right;
-        pos2=gl_camera.eye+step*forward_direction+0.5f*character_size[2]*forward_direction-0.5f*character_size[0]*gl_camera.right;
+        p1=gl_camera.eye+step*forward_direction+0.5f*character_size[2]*forward_direction+0.5f*character_size[0]*gl_camera.right;
+        p2=gl_camera.eye+step*forward_direction+0.5f*character_size[2]*forward_direction-0.5f*character_size[0]*gl_camera.right;;
+        pos1=p1+(0.25f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos2=p2+(0.25f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos3=p1-0.25f*character_size[1]*worldup;
+        pos4=p2-0.25f*character_size[1]*worldup;
+        pos5=p1-(0.75f-BODYEDGE_ERROR)*character_size[1]*worldup;
+        pos6=p2-(0.75f-BODYEDGE_ERROR)*character_size[1]*worldup;
     }
-    x1=round(pos1[0]);
-    y1=round(pos1[1]);
-    z1=round(pos1[2]);
-    x2=round(pos2[0]);
-    y2=round(pos2[1]);
-    z2=round(pos2[2]);
 
-    tuple temp1(x1,y1,z1),temp2(x1,y1-1,z1),temp3(x2,y2,z2),temp4(x2,y2-1,z2);
+    tuple temp1(round(pos1[0]),round(pos1[1]),round(pos1[2]))\
+            ,temp2(round(pos2[0]),round(pos2[1]),round(pos2[2]))\
+            ,temp3(round(pos3[0]),round(pos3[1]),round(pos3[2]))\
+            ,temp4(round(pos4[0]),round(pos4[1]),round(pos4[2]))\
+            ,temp5(round(pos5[0]),round(pos5[1]),round(pos5[2]))\
+            ,temp6(round(pos6[0]),round(pos6[1]),round(pos6[2]));
     iter1=scene.mSceneMap.find(temp1);
     iter2=scene.mSceneMap.find(temp2);
     iter3=scene.mSceneMap.find(temp3);
     iter4=scene.mSceneMap.find(temp4);
+    iter5=scene.mSceneMap.find(temp5);
+    iter6=scene.mSceneMap.find(temp6);
     if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
-            iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
+            iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end()||\
+            iter5!=scene.mSceneMap.end()||iter6!=scene.mSceneMap.end())
         return true;
     else
         return false;
@@ -346,17 +371,19 @@ bool MyGL::collision_test(int direction,float step)
 }
 bool MyGL::bottom_test()
 {
+    if(g_velocity>0)
+        return false;
     glm::vec3 forward_direction=glm::normalize(glm::vec3(gl_camera.look[0],0,gl_camera.look[2]));
     glm::vec3 pos1,pos2,pos3,pos4;
     std::map<tuple, Block*>::iterator iter1,iter2,iter3,iter4;
-    pos1=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)+0.4f*character_size[2]*forward_direction\
-            -0.4f*character_size[0]*gl_camera.right;
-    pos2=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)+0.4f*character_size[2]*forward_direction\
-            +0.4f*character_size[0]*gl_camera.right;
-    pos3=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)-0.4f*character_size[2]*forward_direction\
-            -0.4f*character_size[0]*gl_camera.right;
-    pos4=gl_camera.eye-glm::vec3(0,0.75*character_size[1],0)-0.4f*character_size[2]*forward_direction\
-            +0.4f*character_size[0]*gl_camera.right;
+    pos1=gl_camera.eye-glm::vec3(0,(0.75f+BODYEDGE_ERROR)*character_size[1],0)+(0.5f-BLOCKEDGE_ERROR)*character_size[2]*forward_direction\
+            -(0.5f-BLOCKEDGE_ERROR)*character_size[0]*gl_camera.right;
+    pos2=gl_camera.eye-glm::vec3(0,(0.75f+BODYEDGE_ERROR)*character_size[1],0)+(0.5f-BLOCKEDGE_ERROR)*character_size[2]*forward_direction\
+            +(0.5f-BLOCKEDGE_ERROR)*character_size[0]*gl_camera.right;
+    pos3=gl_camera.eye-glm::vec3(0,(0.75f+BODYEDGE_ERROR)*character_size[1],0)-(0.5f-BLOCKEDGE_ERROR)*character_size[2]*forward_direction\
+            -(0.5f-BLOCKEDGE_ERROR)*character_size[0]*gl_camera.right;
+    pos4=gl_camera.eye-glm::vec3(0,(0.75f+BODYEDGE_ERROR)*character_size[1],0)-(0.5f-BLOCKEDGE_ERROR)*character_size[2]*forward_direction\
+            +(0.5f-BLOCKEDGE_ERROR)*character_size[0]*gl_camera.right;
     tuple temp1(round(pos1[0]),round(pos1[1]),round(pos1[2]))\
             ,temp2(round(pos2[0]),round(pos2[1]),round(pos2[2]))\
             ,temp3(round(pos3[0]),round(pos3[1]),round(pos3[2]))\
@@ -365,17 +392,32 @@ bool MyGL::bottom_test()
     iter2=scene.mSceneMap.find(temp2);
     iter3=scene.mSceneMap.find(temp3);
     iter4=scene.mSceneMap.find(temp4);
-    if(iter1!=scene.mSceneMap.end()|| iter2!=scene.mSceneMap.end()||\
-            iter3!=scene.mSceneMap.end()||iter4!=scene.mSceneMap.end())
+
+    if(iter1!=scene.mSceneMap.end())
+    {
+        gl_camera.TranslateAlongWorldUp(round(pos1[1])+2-gl_camera.eye[1]);
         return true;
+    }
+    else if(iter2!=scene.mSceneMap.end())
+    {
+        gl_camera.TranslateAlongWorldUp(round(pos2[1])+2-gl_camera.eye[1]);
+        return true;
+    }
+    else if(iter3!=scene.mSceneMap.end())
+    {
+        gl_camera.TranslateAlongWorldUp(round(pos3[1])+2-gl_camera.eye[1]);
+        return true;
+    }
+    else if(iter4!=scene.mSceneMap.end())
+    {
+        gl_camera.TranslateAlongWorldUp(round(pos4[1])+2-gl_camera.eye[1]);
+        return true;
+    }
     else
         return false;
 }
 bool MyGL::boundarytest()
 {
-//    if(gl_camera.eye[0]>(scene.mMaxXYZ.x-5)||gl_camera.eye[0]<(scene.mMinXYZ.x+5)||\
-//            gl_camera.eye[1]>(scene.mMaxXYZ.y-5)||gl_camera.eye[1]<(scene.mMinXYZ.y+5)||\
-//            gl_camera.eye[2]>(scene.mMaxXYZ.z-5)||gl_camera.eye[2]<(scene.mMinXYZ.z+5))
     if(fabs(gl_camera.eye[0])>500||fabs(gl_camera.eye[1])>500||\
             fabs(gl_camera.eye[2])>500)
         return true;
@@ -384,7 +426,7 @@ bool MyGL::boundarytest()
 }
 void MyGL::Keyevents()
 {
-    float amount=0.05f;
+    float amount=0.08f;
     if(keyboard[0])
         amount=2.0f;
     if(keyboard[1])             //  Key_Escape
@@ -401,7 +443,10 @@ void MyGL::Keyevents()
         else
         {
             if(collision_test(FORWARD,amount))
-                gl_camera.TranslateAlongLook(-0.05f);
+            {
+                if(!jump_state)
+                    gl_camera.TranslateAlongLook(-amount);
+            }
             else
                 gl_camera.TranslateAlongLook(amount);
         }
@@ -414,7 +459,10 @@ void MyGL::Keyevents()
         else
         {
             if(collision_test(BACK,-amount))
-                gl_camera.TranslateAlongLook(0.05f);
+            {
+                if(!jump_state)
+                    gl_camera.TranslateAlongLook(amount);
+            }
             else
                 gl_camera.TranslateAlongLook(-amount);
         }
@@ -430,7 +478,10 @@ void MyGL::Keyevents()
         else
         {
             if(collision_test(FORWARD,amount))
-                gl_camera.TranslateAlongLook(-0.5*character_size[2]);
+            {
+                if(!jump_state)
+                    gl_camera.TranslateAlongLook(-amount);
+            }
             else
                 gl_camera.TranslateAlongLook(amount);
         }
@@ -442,7 +493,10 @@ void MyGL::Keyevents()
         else
         {
             if(collision_test(BACK,-amount))
-                gl_camera.TranslateAlongLook(0.5*character_size[2]);
+            {
+                if(!jump_state)
+                    gl_camera.TranslateAlongLook(amount);
+            }
             else
                 gl_camera.TranslateAlongLook(-amount);
         }
@@ -454,7 +508,10 @@ void MyGL::Keyevents()
         else
         {
             if(collision_test(RIGHT,amount))
-                gl_camera.TranslateAlongRight(-0.5*character_size[0]);
+            {
+                if(!jump_state)
+                    gl_camera.TranslateAlongRight(-amount);
+            }
             else
                 gl_camera.TranslateAlongRight(amount);
         }
@@ -466,24 +523,35 @@ void MyGL::Keyevents()
         else
         {
             if(collision_test(LEFT,-amount))
-                gl_camera.TranslateAlongRight(0.5*character_size[0]);
+            {
+                if(!jump_state)
+                    gl_camera.TranslateAlongRight(amount);
+            }
             else
                 gl_camera.TranslateAlongRight(-amount);
         }
     }
-//    if(keyboard[14])            //Key_Q
-//        gl_camera.TranslateAlongUp(-amount);
-//    if(keyboard[15])            //Key_E
-//        gl_camera.TranslateAlongUp(amount);
+    if(keyboard[14])              //Key_Q
+    {
+        if(gl_camera.cameramode==FLYING_MODE)
+            gl_camera.TranslateAlongUp(-amount);
+    }
+    if(keyboard[15])              //Key_E
+    {
+        if(gl_camera.cameramode==FLYING_MODE)
+            gl_camera.TranslateAlongUp(amount);
+    }
     if(keyboard[16])              //Key_Space
     {
         if(gl_camera.cameramode==WALKING_MODE)
+        {
             if(!jump_state)
             {
-                g_velocity=1.5f;
+                g_velocity=2.0f;
                 external_force_acceleration=2.0f;
                 jump_state=true;
             }
+        }
     }
     if (keyboard[17])             //Key_R
         gl_camera = Camera(this->width(), this->height(),\
@@ -567,7 +635,6 @@ void MyGL::Keyevents()
 
 void MyGL::keyPressEvent(QKeyEvent *e)
 {
-
     if(e->modifiers() & Qt::ShiftModifier){
         keyboard[0]=true;
 
@@ -590,20 +657,14 @@ void MyGL::keyPressEvent(QKeyEvent *e)
         keyboard[6]=true;
     } else if (e->key() == Qt::Key_2) {
         keyboard[7]=true;
-    } else if (e->key() == Qt::Key_3) {
-        QMessageBox::information(NULL,"Note","Walking Mode");
-        gl_camera = Camera(this->width(), this->height(),\
-                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
-                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
-                           glm::vec3(0,1,0));
+    } else if (e->key() == Qt::Key_G) {
         gl_camera.cameramode=WALKING_MODE;
-    } else if (e->key() == Qt::Key_4) {
-        QMessageBox::information(NULL,"Note","Flying Mode");
-        gl_camera = Camera(this->width(), this->height(),\
-                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
-                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
-                           glm::vec3(0,1,0));
-        gl_camera.cameramode=FLYING_MODE;
+    } else if (e->key() == Qt::Key_F) {
+        if(gl_camera.cameramode!=FLYING_MODE)
+        {
+            gl_camera.takeoff=true;
+            gl_camera.cameramode=FLYING_MODE;
+        }
     } else if (e->key() == Qt::Key_W) {
         keyboard[10]=true;
     } else if (e->key() == Qt::Key_S) {
@@ -621,7 +682,6 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     } else if (e->key() == Qt::Key_R) {
         keyboard[17]=true;
     }
-
 }
 void MyGL::mouseMoveEvent(QMouseEvent *event)
 {     
@@ -675,9 +735,9 @@ void MyGL::keyReleaseEvent(QKeyEvent *e)
         keyboard[6]=false;
     } else if (e->key() == Qt::Key_2) {
         keyboard[7]=false;
-    } else if (e->key() == Qt::Key_3) {
+    } else if (e->key() == Qt::Key_G) {
         keyboard[8]=false;
-    } else if (e->key() == Qt::Key_4) {
+    } else if (e->key() == Qt::Key_F) {
         keyboard[9]=false;
     } else if (e->key() == Qt::Key_W) {
         keyboard[10]=false;
@@ -722,6 +782,20 @@ void MyGL::timerUpdate()
     timeCount++;
     prog_new.setTime(timeCount);
 
+    if(gl_camera.takeoff)
+    {
+        if(gl_camera.takeoff_time>1.0f)
+        {
+            gl_camera.takeoff=false;
+            gl_camera.takeoff_time=0;
+        }
+        else
+            gl_camera.TranslateAlongUp(1.0f/20.0f);
+
+        gl_camera.takeoff_time+=1.0f/60.0f;
+    }
+
+
     Keyevents();
     if(gl_camera.cameramode==FLYING_MODE)
         return;
@@ -732,6 +806,8 @@ void MyGL::timerUpdate()
         QApplication::quit();
     }
     float distance=g_velocity*(time_step)+0.5*(gravity_acceleration+external_force_acceleration)*time_step*time_step;
+    if(distance>1)
+        distance=1;
     gl_camera.TranslateAlongWorldUp(distance);
     update();
     if(bottom_test())

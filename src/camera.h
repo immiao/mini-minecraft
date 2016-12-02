@@ -21,9 +21,10 @@ public:
 
     //Computed attributes
     float aspect;
-    float gimblelock_angle;
 
     int cameramode;//1 means walking mode, 2 means flying mode
+    float takeoff_time;
+    bool takeoff;
 
     glm::vec3 eye,      //The position of the camera in world space
               ref,      //The point in world space towards which the camera is pointing
