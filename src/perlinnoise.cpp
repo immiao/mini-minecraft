@@ -1,5 +1,6 @@
 #include "PerlinNoise.h"
 #include <cstdio>
+#include <cmath>
 
 PerlinNoise::PerlinNoise()
 {
@@ -32,8 +33,28 @@ int PerlinNoise::GetHeight(int i, int j) const
     }
     //printf("%lf\n", t);
     t /= octaves;
-    t = (t + 1) * 0.5 * scale;
+
+    //printf("%lf\n", t);
+    t = (t + 1) * 0.5;
+    t=pow(t,3.3);
+    t *= scale;
     return t;
+}
+double PerlinNoise::Test(int i, int j)
+{
+    double t = 0.0f;
+    double _amplitude = 1;
+    int freq = frequency;
+
+    for(int k = 0; k < octaves; k++)
+    {
+        t += GetValue(i, j, 1 << (octaves - 1 - k)) * _amplitude;
+        _amplitude *= persistence;
+        freq *= 2;
+    }
+    t /= octaves;
+
+    return (t + 1) * 0.5f;
 }
 
 double PerlinNoise::GetValue(int i, int j, int period) const
