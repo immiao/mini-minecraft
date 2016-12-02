@@ -3,6 +3,11 @@
 #include <scene/cube.h>
 #include <time.h>
 
+double distance(double a0, double a1, double a2, int b0, int b1, int b2)
+{
+    return sqrt((a0 - b0) * (a0 - b0) + (a1 - b1) * (a1 - b1) + (a2 - b2) * (a2 - b2));
+}
+
 Scene::Scene() : mMinXYZ(-10, -128, -10), mMaxXYZ(50, 8, 50), mPerlinNoise(0.5, 1.0, 1.0, 6, 100), mRefreshDistance(-1), mNumRowNewBlocks(30)
 {
 
@@ -38,7 +43,7 @@ void Scene::Hollow(double centerx, double centery, double centerz, double radius
             {
                 tuple tempTuple(i, j, k);
                 std::map<tuple, Block*>::iterator iter = mSceneMap.find(tempTuple);
-                if (iter != mSceneMap.end())
+                if (iter != mSceneMap.end() && distance(centerx, centery, centerz, i, j, k) < radius)
                 {
                     mSceneMap.erase(iter);
                     //printf("%d %d %d\n", i, j, k);
