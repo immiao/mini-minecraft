@@ -37,22 +37,22 @@ void main()
         vec2 new_UV;
         if(IsFluid == 1){
             //WATER or LAVA
-            new_UV.x = fs_UV.x + float(u_Time % 150) * 1.0f/16.0f / 150.0f;
+            new_UV.x = fs_UV.x + float(u_Time) * 1.0f/16.0f / 150.0f;
             new_UV.y = fs_UV.y;
         }
         else if(IsFluid == 2){
-            new_UV.x = fs_UV.x + 1.0f / 16.0f - float(u_Time % 150) * 1.0f/16.0f / 150.0f;
+            new_UV.x = fs_UV.x + 1.0f / 16.0f - float(u_Time) * 1.0f/16.0f / 150.0f;
             new_UV.y = fs_UV.y;
         }
         else if(IsFluid == 3){
             //Down
             new_UV.x = fs_UV.x;
-            new_UV.y = fs_UV.y + 1.0f/16.0f - float(u_Time % 150) * 1.0f/16.0f * 1.0f / 150.0f;
+            new_UV.y = fs_UV.y + 1.0f/16.0f - float(u_Time) * 1.0f/16.0f * 1.0f / 150.0f;
         }
         else if(IsFluid == 4){
             //Up
             new_UV.x = fs_UV.x;
-            new_UV.y = fs_UV.y + float(u_Time % 150) * 1.0f/16.0f * 1.0f / 150.0f;
+            new_UV.y = fs_UV.y + float(u_Time) * 1.0f/16.0f * 1.0f / 150.0f;
         }
         else{
             new_UV = fs_UV;

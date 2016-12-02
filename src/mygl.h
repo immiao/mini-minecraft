@@ -18,7 +18,8 @@
 #define FORWARD 2
 #define BACK 3
 
-
+#define BODYEDGE_ERROR 0.05f
+#define BLOCKEDGE_ERROR 0.02f
 const float gravity_acceleration=-0.98f;
 const float time_step=1.0f/15.0f;
 class MyGL
@@ -52,8 +53,6 @@ private:
     float g_velocity;
 
     int timeCount = 0;
-
-
 
 public:
     explicit MyGL(QWidget *parent = 0);

@@ -51,8 +51,8 @@ void Scene::GenerateWorm(double wormx, double wormy, double wormz)
     const int rr_beginSteps = 1000;
     int steps = 0;
     srand(time(NULL));
-    const double radius = 10.0f;
-    const double stepScale = 2.0f;
+    const double radius = 3.0f;
+    const double stepScale = 1.0f;
     const double yScale = 0.3f;
     PerlinNoise WormPerlinNoise(0.5, 1.0, 1.0, 6, 0);
     while (1)
@@ -69,6 +69,7 @@ void Scene::GenerateWorm(double wormx, double wormy, double wormz)
 
         wormx += WormPerlinNoise.GetPerlinNoise(yy, zz) * stepScale;
         wormy += WormPerlinNoise.GetPerlinNoise(xx, zz) * yScale;
+       // printf("%f\n", WormPerlinNoise.GetPerlinNoise(xx, zz));
         wormz += WormPerlinNoise.GetPerlinNoise(xx, yy) * stepScale;
         if (wormx < mMinXYZ.x) wormx = mMaxXYZ.x;
         if (wormx > mMaxXYZ.x) wormx = mMinXYZ.x;
@@ -102,6 +103,9 @@ void Scene::Create()
         GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -32.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
         GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -64.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
         GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -96.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
+        GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -48.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
+        GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -16.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
+        GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -112.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
 //        GenerateWorm(mMinXYZ.x, 5.f, mMinXYZ.z);
 //        GenerateWorm(mMinXYZ.x, 5.f, mMaxXYZ.z);
 //        GenerateWorm(mMaxXYZ.x, 5.f, mMinXYZ.z);
