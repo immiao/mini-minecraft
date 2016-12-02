@@ -44,7 +44,7 @@ void chunk::set(int x, int y, int z, int type){
 }
 
 void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::vec2 &offset_bottom, glm::vec2 &offset_side, int type){
-    if(type == 1){
+    if(type == 2){
         //DIRT:
         offset_top += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
         offset_top += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
@@ -54,7 +54,7 @@ void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::ve
         offset_bottom += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
         cosine_power = 256.0f;
     }
-    else if(type == 2){
+    else if(type == 1){
         //Grass:
         //Grass Top
         offset_top += 8.0f * glm::vec2(1.0f / 16.0f, 0.0f);

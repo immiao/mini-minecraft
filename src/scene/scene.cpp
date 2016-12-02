@@ -1,8 +1,9 @@
 #include <scene/scene.h>
 
 #include <scene/cube.h>
+#include <time.h>
 
-Scene::Scene() : mMinXYZ(-10, -20, -10), mMaxXYZ(50, 8, 50), mPerlinNoise(0.5, 1.0, 1.0, 6, 100), mRefreshDistance(0.1), mNumRowNewBlocks(30)
+Scene::Scene() : mMinXYZ(-10, -1, -10), mMaxXYZ(50, 8, 50), mPerlinNoise(0.5, 1.0, 1.0, 6, 100), mRefreshDistance(0.1), mNumRowNewBlocks(30)
 {
 
 }
@@ -35,6 +36,27 @@ void Scene::Create()
                 tuple tempTuple(i, k, j);
                 mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
             }
+        }
+    }
+    bool IsWorm = false;
+    if (IsWorm)
+    {
+        double wormx = (mMinXYZ.x + mMaxXYZ.x) * 0.5f;
+        double wormy = -32.f;
+        double wormz = (mMinXYZ.z + mMinXYZ.z) * 0.5f;
+
+        const int rr_beginSteps = 100;
+        int steps = 0;
+        srand(time(NULL));
+        while (1)
+        {
+            if (steps > rr_beginSteps)
+            {
+                if ((rand() % 101 / 100.f) > 0.7f)
+                    break;
+            }
+
+            steps++;
         }
     }
 //    for (int i = 0; i < 10; i++)
