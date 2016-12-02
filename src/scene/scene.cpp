@@ -88,12 +88,15 @@ void Scene::Create()
         for (int j = mMinXYZ.z; j <= mMaxXYZ.z; j++)
         {
             int height = mPerlinNoise.GetHeight(i, j);
-            for (int k = mMinXYZ.y; k <= height; k++)
+            for (int k = mMinXYZ.y; k < height; k++)
             {
-                Block* pBlock = new Block(glm::ivec3(i, k, j));
+                Block* pBlock = new Block(glm::ivec3(i, k, j), DIRT);
                 tuple tempTuple(i, k, j);
                 mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
             }
+            Block* pBlock = new Block(glm::ivec3(i, height, j), GRASS);
+            tuple tempTuple(i, height, j);
+            mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
         }
     }
     bool IsWorm = true;

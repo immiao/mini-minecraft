@@ -3,5 +3,5 @@
 Block::Block(glm::ivec3 position, BLOCK_TYPE type)
 {
     mPosition = position;
-    mType = LAVA;
+    mType = type;
 }
