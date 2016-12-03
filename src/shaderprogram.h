@@ -26,16 +26,18 @@ public:
 
     int unifTexture;
     int unifNormalMap;
+    int unifCosinePower;
 
     int unifViewPos;
     int unifTime;
 
     GLuint textureHandle;
     GLuint normalmapHandle;
+    GLuint cosine_powerHandle;
 
     //texture = 0, normal_map = 1;
-    int width0, height0, width1, height1;
-    unsigned char *image0, *image1;
+    int width0, height0, width1, height1, width2, height2;
+    unsigned char *image0, *image1, *image2;
 public:
     ShaderProgram(GLWidget277* context);
     // Sets up the requisite GL data and shaders from the given .glsl files

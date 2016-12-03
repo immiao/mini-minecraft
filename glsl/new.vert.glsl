@@ -28,7 +28,6 @@ in vec2 vs_UV;    //vertices texture uv
 in vec3 vs_tangent;
 in vec3 vs_bitangent;
 in int vs_IsFluid;
-in float vs_cosine_power;
 
 out vec4 fs_LightVec1;       // The direction in which our virtual light lies, relative to each vertex. This is implicitly passed to the fragment shader.
 
@@ -38,7 +37,6 @@ out vec3 TangentLightPos;
 out vec3 TangentViewPos;
 out vec3 TangentFragPos;
 flat out int IsFluid;
-out float Cosine_power;
 
 const vec4 lightDir = vec4(6,5,4,0);  // The direction of our virtual light, which is used to compute the shading of
                                         // the geometry in the fragment shader.
@@ -51,8 +49,6 @@ void main()
     FragPos = vec3(u_Model * vs_coord);
     fs_UV = vs_UV;
     IsFluid = vs_IsFluid;
-    //shininess
-    Cosine_power = vs_cosine_power;
 
     mat3 normalMatrix = transpose(mat3(u_ModelInvTr));
     vec3 T = normalize(normalMatrix * vs_tangent);

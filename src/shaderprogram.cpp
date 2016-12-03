@@ -70,6 +70,7 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
 
     unifTexture    = context->glGetUniformLocation(prog, "u_texture");
     unifNormalMap  = context->glGetUniformLocation(prog, "u_texture_normal_map");
+    unifCosinePower= context->glGetUniformLocation(prog, "u_cosine_power_map");
 
     unifViewPos    = context->glGetUniformLocation(prog, "u_ViewPos");
     unifTime       = context->glGetUniformLocation(prog, "u_Time");
@@ -77,9 +78,12 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unsigned char* img0 = SOIL_load_image("../miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
                                            &width0, &height0, 0, SOIL_LOAD_RGB);
     image0 = img0;
-    unsigned char* img1 = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_normals_all.png",
+    unsigned char* img1 = SOIL_load_image("../miniminecraft/minecraft_textures_all/minecraft_normals_all.png",
                                            &width1, &height1, 0, SOIL_LOAD_RGB);
     image1 = img1;
+    unsigned char* img2 = SOIL_load_image("../miniminecraft/minecraft_textures_all/minecraft_cosine_power_all.png",
+                                           &width2, &height2, 0, SOIL_LOAD_RGB);
+    image2 = img2;
 }
 
 void ShaderProgram::useMe()
@@ -296,12 +300,23 @@ void ShaderProgram::setTexture(){
     context->glGenerateMipmap(GL_TEXTURE_2D);
     context->glUniform1i(unifNormalMap, 1);
 
+    //cosine_power texture:
+    context->glGenTextures(1, &cosine_powerHandle);
+    context->glActiveTexture(GL_TEXTURE2);
+    context->glBindTexture(GL_TEXTURE_2D, cosine_powerHandle);
+
+//    int width2, height2;
+    context->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGB, GL_UNSIGNED_BYTE, image2);
+    context->glGenerateMipmap(GL_TEXTURE_2D);
+    context->glUniform1i(unifCosinePower, 2);
+
 }
 
 void ShaderProgram::deleteTexture(){
     useMe();
     context->glDeleteTextures(1, &textureHandle);
     context->glDeleteTextures(1, &normalmapHandle);
+    context->glDeleteTextures(1, &cosine_powerHandle);
 }
 
 void ShaderProgram::setTime(int timeCount){

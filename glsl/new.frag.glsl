@@ -16,6 +16,7 @@ uniform int u_Time;
 
 uniform sampler2D u_texture; //The texture
 uniform sampler2D u_texture_normal_map;
+uniform sampler2D u_cosine_power_map;
 
 //// These are the interpolated values out of the rasterizer, so you can't know
 //// their specific values without knowing the vertices that contributed to them
@@ -27,7 +28,6 @@ in vec3 TangentLightPos;
 in vec3 TangentViewPos;
 in vec3 TangentFragPos;
 flat in int IsFluid;
-in float Cosine_power;
 
 out vec4 out_Col; // This is the final output color that you will see on your
                   // screen for the pixel that is currently being processed.
@@ -64,6 +64,8 @@ void main()
 
         // Get diffuse color
         vec3 color = texture(u_texture, new_UV).rgb;
+        vec3 color2 = texture(u_cosine_power_map, new_UV).rgb;
+        float cosine_power = color2.x * 256.0f;
         // Ambient
         vec3 ambient = 0.2 * color;
         // Diffuse
@@ -74,7 +76,7 @@ void main()
         vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
         //vec3 reflectDir = reflect(-lightDir, normal);
         vec3 halfwayDir = normalize(lightDir + viewDir);
-        float spec = max(pow(dot(normal, halfwayDir), Cosine_power * Cosine_power), 0.0);
+        float spec = max(pow(dot(normal, halfwayDir), cosine_power * cosine_power), 0.0);
         vec3 specular = vec3(0.3) * spec;
 
         out_Col = vec4(ambient + diffuse + specular, 1.0f);

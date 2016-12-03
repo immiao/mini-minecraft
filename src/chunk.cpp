@@ -19,7 +19,6 @@ struct VertexData{
     glm::vec3 tang;
     glm::vec3 bitang;
     int Fluid;
-    float cosine_power;
 };
 
 chunk::chunk(GLWidget277* context)
@@ -43,7 +42,7 @@ void chunk::set(int x, int y, int z, int type){
     changed = true;
 }
 
-void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::vec2 &offset_bottom, glm::vec2 &offset_side, int type){
+void chunk::setTextureOffset(glm::vec2 &offset_top, glm::vec2 &offset_bottom, glm::vec2 &offset_side, int type){
     if(type == 1){
         //DIRT:
         offset_top += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
@@ -52,7 +51,7 @@ void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::ve
         offset_side += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
         offset_bottom += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
         offset_bottom += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
-        cosine_power = 256.0f;
+        //cosine_power = 256.0f;
     }
     else if(type == 2){
         //Grass:
@@ -65,7 +64,7 @@ void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::ve
         //Grass Bottom
         offset_bottom += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
         offset_bottom += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
-        cosine_power = 256.0f;
+//        cosine_power = 256.0f;
     }
     else if(type == 3){
         //Stone:
@@ -75,7 +74,7 @@ void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::ve
         offset_side += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
         offset_bottom += 1.0f * glm::vec2(1.0f / 16.0f, 0.0f);
         offset_bottom += 0.0f * glm::vec2(0.0f, 1.0f / 16.0f);
-        cosine_power = 7.0f;
+//        cosine_power = 7.0f;
     }
     else if(type == 4){
         //Wood:
@@ -85,7 +84,7 @@ void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::ve
         offset_side += 1.0f * glm::vec2(0.0f, 1.0f / 16.0f);
         offset_bottom += 5.0f * glm::vec2(1.0f / 16.0f, 0.0f);
         offset_bottom += 1.0f * glm::vec2(0.0f, 1.0f / 16.0f);
-        cosine_power = 256.0f;
+//        cosine_power = 256.0f;
     }
     else if(type == 5){
         //LEAF:
@@ -95,7 +94,7 @@ void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::ve
         offset_side += 3.0f * glm::vec2(0.0f, 1.0f / 16.0f);
         offset_bottom += 5.0f * glm::vec2(1.0f / 16.0f, 0.0f);
         offset_bottom += 3.0f * glm::vec2(0.0f, 1.0f / 16.0f);
-        cosine_power = 256.0f;
+//        cosine_power = 256.0f;
     }
     else if(type == 6){
         //BEDROCK:
@@ -105,7 +104,7 @@ void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::ve
         offset_side += 1.0f * glm::vec2(0.0f, 1.0f / 16.0f);
         offset_bottom += 1.0f * glm::vec2(1.0f / 16.0f, 0.0f);
         offset_bottom += 1.0f * glm::vec2(0.0f, 1.0f / 16.0f);
-        cosine_power = 7.0f;
+//        cosine_power = 7.0f;
     }
     else if(type == 7){
         //COAL:
@@ -115,7 +114,7 @@ void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::ve
         offset_side += 2.0f * glm::vec2(0.0f, 1.0f / 16.0f);
         offset_bottom += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
         offset_bottom += 2.0f * glm::vec2(0.0f, 1.0f / 16.0f);
-        cosine_power = 256.0f;
+//        cosine_power = 256.0f;
     }
     else if(type == 8){
         //IRON ORE
@@ -125,7 +124,7 @@ void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::ve
         offset_side += 2.0f * glm::vec2(0.0f, 1.0f / 16.0f);
         offset_bottom += 1.0f * glm::vec2(1.0f / 16.0f, 0.0f);
         offset_bottom += 2.0f * glm::vec2(0.0f, 1.0f / 16.0f);
-        cosine_power = 5.0f;
+//        cosine_power = 5.0f;
     }
     else if(type == 9){
         //LAVA
@@ -135,7 +134,7 @@ void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::ve
         offset_side += 14.0f * glm::vec2(0.0f, 1.0f / 16.0f);
         offset_bottom += 14.0f * glm::vec2(1.0f / 16.0f, 0.0f);
         offset_bottom += 14.0f * glm::vec2(0.0f, 1.0f / 16.0f);
-        cosine_power = 8.0f;
+//        cosine_power = 8.0f;
     }
     else if(type == 10){
         //WATER
@@ -145,7 +144,7 @@ void chunk::setTextureOffset(float &cosine_power, glm::vec2 &offset_top, glm::ve
         offset_side += 12.0f * glm::vec2(0.0f, 1.0f / 16.0f);
         offset_bottom += 14.0f * glm::vec2(1.0f / 16.0f, 0.0f);
         offset_bottom += 12.0f * glm::vec2(0.0f, 1.0f / 16.0f);
-        cosine_power = 4.0f;
+//        cosine_power = 4.0f;
     }
 }
 
@@ -170,8 +169,7 @@ void chunk::update(){
                 //NULL: 0, DIRT: 1, GRASS: 2, STONE: 3, WOOD: 4, LEAF: 5, BEDROCK: 6
                 //COAL: 7, IRON ORE: 8, LAVA: 9, WATER: 10;
                 //Shininess
-                float cosine_power = 0.0f;
-                setTextureOffset(cosine_power, offset_top, offset_bottom, offset_side, type);
+                setTextureOffset(offset_top, offset_bottom, offset_side, type);
                 glm::vec3 pos1, pos2, pos3, edge1, edge2;
                 glm::vec2 uv1, uv2, uv3, deltaUV1, deltaUV2;
                 GLfloat f;
@@ -185,7 +183,7 @@ void chunk::update(){
                     vert.Fluid = 0;
                 }
                 //set the shininess of the texture
-                vert.cosine_power = cosine_power;
+//                vert.cosine_power = cosine_power;
                 //View from negative x
                 if(x > 0 && !block[x-1][y][z] || x == 0){
                     vert.nor = (glm::vec4(-1.0f  ,0.0f  ,0.0f  ,      1));
@@ -381,7 +379,7 @@ void chunk::update(){
                     pos1 = glm::vec3(x+0.5f   ,y-0.5f  ,z-0.5f);
                     pos2 = glm::vec3(x+0.5f   ,y-0.5f  ,z+0.5f);
                     pos3 = glm::vec3(x-0.5f   ,y-0.5f  ,z+0.5f);
-                    uv1  = glm::vec2(1.0f / 16.0f - epsilon_value, 1.0f / 16.0f - epsilon_value + epsilon_value) + offset_bottom;
+                    uv1  = glm::vec2(1.0f / 16.0f - epsilon_value, 1.0f / 16.0f - epsilon_value) + offset_bottom;
                     uv2  = glm::vec2(1.0f / 16.0f - epsilon_value, 0.0f + epsilon_value) + offset_bottom;
                     uv3  = glm::vec2(0.0f + epsilon_value, 0.0f + epsilon_value) + offset_bottom;
                     //Compute tang and bitang:
@@ -649,14 +647,13 @@ void chunk::render(ShaderProgram prog){
 
     context->glBindBuffer(GL_ARRAY_BUFFER, vbo);
     GLint attribute_coord = -1, attribute_normal = -1, attribute_uv = -1,
-            attribute_tangent = -1, attribute_bitangent = -1 ,attribute_fluid = -1, attribute_cosine_power = -1;
+            attribute_tangent = -1, attribute_bitangent = -1 ,attribute_fluid = -1;
     attribute_coord  = context->glGetAttribLocation(prog.prog, "vs_coord");
     attribute_normal = context->glGetAttribLocation(prog.prog, "vs_nor");
     attribute_uv     = context->glGetAttribLocation(prog.prog, "vs_UV");
     attribute_tangent= context->glGetAttribLocation(prog.prog, "vs_tangent");
     attribute_bitangent= context->glGetAttribLocation(prog.prog, "vs_bitangent");
     attribute_fluid  = context->glGetAttribLocation(prog.prog, "vs_IsFluid");
-    attribute_cosine_power = context->glGetAttribLocation(prog.prog, "vs_cosine_power");
 
     if (attribute_coord != -1) {
         context->glEnableVertexAttribArray(attribute_coord);
@@ -682,10 +679,6 @@ void chunk::render(ShaderProgram prog){
         context->glEnableVertexAttribArray(attribute_fluid);
         context->glVertexAttribIPointer(attribute_fluid, 1, GL_INT, sizeof(VertexData), (void*)(sizeof(glm::vec4) * 2 + sizeof(glm::vec2) + sizeof(glm::vec3) * 2));
     }
-    if (attribute_cosine_power != -1) {
-        context->glEnableVertexAttribArray(attribute_cosine_power);
-        context->glVertexAttribPointer(attribute_cosine_power, 1 , GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)(sizeof(glm::vec4) * 2 + sizeof(glm::vec2) + sizeof(glm::vec3) * 2 + sizeof(int)));
-    }
     context->glDrawArrays(GL_TRIANGLES, 0, elements);
 
     if (attribute_coord != -1) context->glDisableVertexAttribArray(attribute_coord);
@@ -694,7 +687,6 @@ void chunk::render(ShaderProgram prog){
     if (attribute_tangent != -1) context->glDisableVertexAttribArray(attribute_tangent);
     if (attribute_bitangent != -1) context->glDisableVertexAttribArray(attribute_bitangent);
     if (attribute_fluid != -1) context->glDisableVertexAttribArray(attribute_fluid);
-    if (attribute_cosine_power != -1) context->glDisableVertexAttribArray(attribute_cosine_power);
 
     context->glDisable(GL_CULL_FACE);
     context->glDisable(GL_DEPTH_TEST);
