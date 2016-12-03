@@ -28,27 +28,50 @@ void Scene::clear()
     mSceneMap.clear();
 }
 
-void Scene::Hollow(double centerx, double centery, double centerz, double radius)
+void Scene::Hollow(double centerx, double centery, double centerz, double OutsideRadius, double InsideRadius, PerlinNoise &VoxelPerlinNoise)
 {
-    int minx = centerx - radius;
-    int miny = centery - radius;
-    int minz = centerz - radius;
-    int maxx = centerx + radius;
-    int maxy = centery + radius;
-    int maxz = centerz + radius;
+    int minx = centerx - OutsideRadius;
+    int miny = centery - OutsideRadius;
+    int minz = centerz - OutsideRadius;
+    int maxx = centerx + OutsideRadius;
+    int maxy = centery + OutsideRadius;
+    int maxz = centerz + OutsideRadius;
 
     for (int i = minx; i <= maxx; i++)
         for (int j = miny; j <= maxy; j++)
+        {
+            if (j == mMinXYZ.y) continue; // do not hollow the BEDROCKs
+
             for (int k = minz; k <= maxz; k++)
             {
                 tuple tempTuple(i, j, k);
                 std::map<tuple, Block*>::iterator iter = mSceneMap.find(tempTuple);
-                if (iter != mSceneMap.end() && distance(centerx, centery, centerz, i, j, k) < radius)
+                if (iter != mSceneMap.end())
                 {
-                    mSceneMap.erase(iter);
-                    //printf("%d %d %d\n", i, j, k);
+
+                    double dis = distance(centerx, centery, centerz, i, j, k);
+                    if (dis < InsideRadius)
+                    {
+                        mSceneMap.erase(iter);
+                        //printf("%d %d %d\n", i, j, k);
+                    }
+                    else if (dis < OutsideRadius)
+                    {
+                        double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
+                        //printf("%f\n", r);
+                        if (r > 0.50 && r < 0.52)
+                        {
+
+                            iter->second->mType = COAL;
+                        }
+                        else if (r > 0.45 && r < 0.47)
+                        {
+                            iter->second->mType = IRON_ORE;
+                        }
+                    }
                 }
             }
+        }
 }
 
 void Scene::GenerateWorm(double wormx, double wormy, double wormz)
@@ -56,13 +79,15 @@ void Scene::GenerateWorm(double wormx, double wormy, double wormz)
     const int rr_beginSteps = 1000;
     int steps = 0;
     srand(time(NULL));
-    const double radius = 3.0f;
+    const double OutsideRadius = 5.0f;
+    const double InsideRadius = 3.0f;
     const double stepScale = 1.0f;
     const double yScale = 0.3f;
     PerlinNoise WormPerlinNoise(0.5, 1.0, 1.0, 6, 0);
+    PerlinNoise MinePerlinNoise(0.5, 1.0, 1.0, 4, 0);
     while (1)
     {
-        Hollow(wormx, wormy, wormz, radius);
+        Hollow(wormx, wormy, wormz, OutsideRadius, InsideRadius, MinePerlinNoise);
         if (steps > rr_beginSteps)
         {
             if ((rand() % 101 / 100.f) > 0.7f)
@@ -78,8 +103,7 @@ void Scene::GenerateWorm(double wormx, double wormy, double wormz)
         wormz += WormPerlinNoise.GetPerlinNoise(xx, yy) * stepScale;
         if (wormx < mMinXYZ.x) wormx = mMaxXYZ.x;
         if (wormx > mMaxXYZ.x) wormx = mMinXYZ.x;
-        if (wormy < mMinXYZ.y) wormy = mMaxXYZ.y;
-        if (wormy > mMaxXYZ.y) wormy = mMinXYZ.y;
+        if (wormy < mMinXYZ.y) break;
         if (wormz < mMinXYZ.z) wormz = mMaxXYZ.z;
         if (wormz > mMaxXYZ.z) wormz = mMinXYZ.z;
         steps++;
@@ -88,6 +112,7 @@ void Scene::GenerateWorm(double wormx, double wormy, double wormz)
 
 void Scene::Create()
 {
+    PerlinNoise VoxelPerlinNoise(0.5, 1.0, 1.0, 6, 0);
     for (int i = mMinXYZ.x; i <= mMaxXYZ.x; i++)
     {
         for (int j = mMinXYZ.z; j <= mMaxXYZ.z; j++)
@@ -100,7 +125,11 @@ void Scene::Create()
             int height = mPerlinNoise.GetHeight(i, j);
             for (int k = mMinXYZ.y + 1; k < height; k++)
             {
-                Block* pBlock = new Block(glm::ivec3(i, k, j), DIRT);
+                BLOCK_TYPE type = DIRT;
+                double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
+                if (k <= -16 && r > 0.42f && r < 0.55f) type = STONE;
+
+                Block* pBlock = new Block(glm::ivec3(i, k, j), type);
                 tuple tempTuple(i, k, j);
                 mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
             }
@@ -114,7 +143,7 @@ void Scene::Create()
     bool IsWorm = true;
     if (IsWorm)
     {
-        GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, 5.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
+        //GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, 5.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
         GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -32.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
         GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -64.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
         GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -96.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);

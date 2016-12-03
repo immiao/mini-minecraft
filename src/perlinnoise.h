@@ -15,6 +15,7 @@ public:
     double GetValue(double i, double j, int period);
     double GetValue(int x, int y, int z, int period);
     double GetPerlinNoise(double i, double j);
+    double GetPerlinNoise(int i, int j, int k);
     double SCurve(double x);
     double Lerp(double p0, double p1, double x);
 
