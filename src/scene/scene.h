@@ -26,6 +26,7 @@ public:
     double mRefreshDistance; // when the distance from the camera to the edge is smaller than this value, generate new blocks
     int mNumRowNewBlocks; // number of rows of the new blocks
 
-    void Hollow(double centerx, double centery, double centerz, double OutsideRadius, double InsideRadius, PerlinNoise &VoxelPerlinNoise);
+    void Hollow(double centerx, double centery, double centerz, double OutsideRadius, double InsideRadius,
+                PerlinNoise &VoxelPerlinNoise, std::vector<Block *> &bottomBlock);
     void GenerateWorm(double wormx, double wormy, double wormz);
 };

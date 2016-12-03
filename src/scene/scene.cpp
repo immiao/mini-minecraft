@@ -28,7 +28,8 @@ void Scene::clear()
     mSceneMap.clear();
 }
 
-void Scene::Hollow(double centerx, double centery, double centerz, double OutsideRadius, double InsideRadius, PerlinNoise &VoxelPerlinNoise)
+void Scene::Hollow(double centerx, double centery, double centerz, double OutsideRadius, double InsideRadius,
+                   PerlinNoise &VoxelPerlinNoise, std::vector<Block*> &bottomBlock)
 {
     int minx = centerx - OutsideRadius;
     int miny = centery - OutsideRadius;
@@ -36,6 +37,7 @@ void Scene::Hollow(double centerx, double centery, double centerz, double Outsid
     int maxx = centerx + OutsideRadius;
     int maxy = centery + OutsideRadius;
     int maxz = centerz + OutsideRadius;
+    std::map<std::pair<int, int>, int> minHollowY;
 
     for (int i = minx; i <= maxx; i++)
         for (int j = miny; j <= maxy; j++)
@@ -52,6 +54,8 @@ void Scene::Hollow(double centerx, double centery, double centerz, double Outsid
                     double dis = distance(centerx, centery, centerz, i, j, k);
                     if (dis < InsideRadius)
                     {
+                        std::pair<int, int> p(i, k);
+                        minHollowY[p] = j < minHollowY[p] ? j : minHollowY[p];
                         mSceneMap.erase(iter);
                         //printf("%d %d %d\n", i, j, k);
                     }
@@ -72,6 +76,15 @@ void Scene::Hollow(double centerx, double centery, double centerz, double Outsid
                 }
             }
         }
+    std::map<std::pair<int, int>, int>::iterator iter;
+    for (iter = minHollowY.begin(); iter != minHollowY.end(); iter++)
+    {
+        if (iter->second - 1 == mMinXYZ.y) continue; // ensure the block type at the bottom is BEDROCK
+        tuple tempTuple(iter->first.first, iter->second - 1, iter->first.second);
+        std::map<tuple, Block*>::iterator iter = mSceneMap.find(tempTuple);
+        if (iter != mSceneMap.end())
+            bottomBlock.push_back(iter->second);
+    }
 }
 
 void Scene::GenerateWorm(double wormx, double wormy, double wormz)
@@ -85,9 +98,16 @@ void Scene::GenerateWorm(double wormx, double wormy, double wormz)
     const double yScale = 0.3f;
     PerlinNoise WormPerlinNoise(0.5, 1.0, 1.0, 6, 0);
     PerlinNoise MinePerlinNoise(0.5, 1.0, 1.0, 4, 0);
+
+    int miny = 200;
+    int maxy = -200;
+    std::vector<Block*> bottomBlock;
     while (1)
     {
-        Hollow(wormx, wormy, wormz, OutsideRadius, InsideRadius, MinePerlinNoise);
+        miny = wormy < miny ? wormy : miny;
+        maxy = wormy > maxy ? wormy : maxy;
+
+        Hollow(wormx, wormy, wormz, OutsideRadius, InsideRadius, MinePerlinNoise, bottomBlock);
         if (steps > rr_beginSteps)
         {
             if ((rand() % 101 / 100.f) > 0.7f)
@@ -108,6 +128,17 @@ void Scene::GenerateWorm(double wormx, double wormy, double wormz)
         if (wormz > mMaxXYZ.z) wormz = mMinXYZ.z;
         steps++;
     }
+
+    miny = miny - InsideRadius < mMinXYZ.y ? mMinXYZ.y + 1 : miny - InsideRadius;
+    maxy = maxy + InsideRadius;
+    double lavaHeight = miny + (maxy - miny) * 0.1f;
+
+    int size = bottomBlock.size();
+    for (int i = 0; i < size; i++)
+    {
+        if (bottomBlock[i]->mPosition.y < lavaHeight)
+            bottomBlock[i]->mType = LAVA;
+    }
 }
 
 void Scene::Create()
@@ -127,7 +158,7 @@ void Scene::Create()
             {
                 BLOCK_TYPE type = DIRT;
                 double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
-                if (k <= -16 && r > 0.42f && r < 0.55f) type = STONE;
+                if (k <= -16 && r > 0.44f && r < 0.55f) type = STONE;
 
                 Block* pBlock = new Block(glm::ivec3(i, k, j), type);
                 tuple tempTuple(i, k, j);
@@ -143,7 +174,7 @@ void Scene::Create()
     bool IsWorm = true;
     if (IsWorm)
     {
-        //GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, 5.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
+        GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, 5.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
         GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -32.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
         GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -64.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
         GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -96.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f);
