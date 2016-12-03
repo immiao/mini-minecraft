@@ -64,7 +64,7 @@ public:
 
     void GLDrawScene();
     void initializeGrid();
-    void UpdateWhenNewTerrain(std::map<tuple, Block *> New_map);
+    void UpdateWhenNewTerrain(std::map<tuple, Block *> &New_map);
 
     void breakblocks(QPoint screen_pos,int distance_max);
     void addblocks(QPoint screen_pos,int distance_max);

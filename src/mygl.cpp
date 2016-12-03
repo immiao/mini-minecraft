@@ -177,7 +177,7 @@ void MyGL::initializeGrid(){
 //        prog_lambert.draw(geom_cube);
     }
 }
-void MyGL::UpdateWhenNewTerrain(std::map<tuple, Block *> New_map){
+void MyGL::UpdateWhenNewTerrain(std::map<tuple, Block *> &New_map){
     std::map<tuple, Block*>::iterator iter;
     for (iter = New_map.begin(); iter != New_map.end(); iter++)
     {
@@ -717,28 +717,28 @@ void MyGL::timerUpdate()
             if (fabs(gl_camera.eye.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
             {
                // printf("0\n");
-                std::map<tuple, Block*> New_map = scene.GenerateBlocks(0);
-                UpdateWhenNewTerrain(New_map);
+                scene.GenerateBlocks(0);
+                UpdateWhenNewTerrain(scene.New_map);
             }
             else if (fabs(gl_camera.eye.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
             {
                 //printf("%f %f %f\n", gl_camera.eye.x, scene.mMaxXYZ.x, scene.mRefreshDistance);
-                std::map<tuple, Block*> New_map = scene.GenerateBlocks(1);
-                UpdateWhenNewTerrain(New_map);
+                scene.GenerateBlocks(1);
+                UpdateWhenNewTerrain(scene.New_map);
 
             }
             else if (fabs(gl_camera.eye.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
             {
                 //printf("2\n");
-                std::map<tuple, Block*> New_map = scene.GenerateBlocks(2);
-                UpdateWhenNewTerrain(New_map);
+                scene.GenerateBlocks(2);
+                UpdateWhenNewTerrain(scene.New_map);
 
             }
             else if (fabs(gl_camera.eye.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
             {
                 //printf("3\n");
-                std::map<tuple, Block*> New_map = scene.GenerateBlocks(3);
-                UpdateWhenNewTerrain(New_map);
+                scene.GenerateBlocks(3);
+                UpdateWhenNewTerrain(scene.New_map);
 
             }
             //printf("x:%f z:%f\n", gl_camera.eye.x, gl_camera.eye.z);

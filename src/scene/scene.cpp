@@ -10,7 +10,7 @@ double distance(double a0, double a1, double a2, int b0, int b1, int b2)
 
 Scene::Scene() : mMinXYZ(-10, -128, -10), mMaxXYZ(50, 8, 50), mPerlinNoise(0.5, 1.0, 1.0, 6, 100), mRefreshDistance(5), mNumRowNewBlocks(30)
 {
-
+    mIsWorm = true;
 }
 
 Scene::~Scene()
@@ -93,13 +93,13 @@ void Scene::Hollow(double centerx, double centery, double centerz, double Outsid
 
 void Scene::GenerateWorm(double wormx, double wormy, double wormz, glm::ivec3 &scopeMin, glm::ivec3 &scopeMax)
 {
-    const int rr_beginSteps = 1000;
+    const int rr_beginSteps = 30;
     int steps = 0;
     srand(time(NULL));
     const double OutsideRadius = 5.0f;
     const double InsideRadius = 3.0f;
-    const double stepScale = 1.0f;
-    const double yScale = 0.3f;
+    const double stepScale = 20.0f;
+    const double yScale = 5.0f;
     PerlinNoise WormPerlinNoise(0.5, 1.0, 1.0, 6, 0);
     PerlinNoise MinePerlinNoise(0.5, 1.0, 1.0, 4, 0);
 
@@ -141,7 +141,10 @@ void Scene::GenerateWorm(double wormx, double wormy, double wormz, glm::ivec3 &s
     for (int i = 0; i < size; i++)
     {
         if (bottomBlock[i]->mPosition.y < lavaHeight)
+        {
             bottomBlock[i]->mType = LAVA;
+            //printf("LAVA:%d\n", i);
+        }
     }
 }
 
@@ -175,8 +178,8 @@ void Scene::Create()
             mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
         }
     }
-    bool IsWorm = true;
-    if (IsWorm)
+
+    if (mIsWorm)
     {
         //GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, 5.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f, mMinXYZ, mMaxXYZ);
         GenerateWorm((mMinXYZ.x + mMaxXYZ.x) * 0.5f, -32.f, (mMinXYZ.z + mMaxXYZ.z) * 0.5f, mMinXYZ, mMaxXYZ);
@@ -194,7 +197,7 @@ void Scene::Create()
 //        printf("16:%f 15:%f 14:%f\n", mPerlinNoise.GetHeight(i, 16), mPerlinNoise.GetHeight(i, 15), mPerlinNoise.GetHeight(i, 14));
 }
 
-std::map<tuple, Block*> Scene::GenerateBlocks(int direction)
+void Scene::GenerateBlocks(int direction)
 {
     New_map.clear();
     PerlinNoise VoxelPerlinNoise(0.5, 1.0, 1.0, 6, 0);
@@ -237,116 +240,152 @@ std::map<tuple, Block*> Scene::GenerateBlocks(int direction)
         scopeMax.x = mMaxXYZ.x;
         mMinXYZ.x = mMinXYZ.x - mNumRowNewBlocks;
         scopeMin.x = mMinXYZ.x;
-
-        GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -32.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
-        GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -64.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
-        GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -96.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
-        GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -48.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
-        GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -16.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
-        GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -112.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+        if (mIsWorm)
+        {
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -32.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -64.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -96.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -48.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -16.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -112.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+        }
     }
-//    else if (direction == 1)
-//    {
-//        for (int i = mMaxXYZ.x + 1; i < mMaxXYZ.x + 1 + mNumRowNewBlocks; i++)
-//        {
-//            for (int j = mMinXYZ.z; j <= mMaxXYZ.z; j++)
-//            {
-//                // BEDROCK at height of -128
-//                Block* pBlock0 = new Block(glm::ivec3(i, mMinXYZ.y, j), BEDROCK);
-//                tuple tempTuple0(i, mMinXYZ.y, j);
-//                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
-//                New_map.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
+    else if (direction == 1)
+    {
+        for (int i = mMaxXYZ.x + 1; i < mMaxXYZ.x + 1 + mNumRowNewBlocks; i++)
+        {
+            for (int j = mMinXYZ.z; j <= mMaxXYZ.z; j++)
+            {
+                // BEDROCK at height of -128
+                Block* pBlock0 = new Block(glm::ivec3(i, mMinXYZ.y, j), BEDROCK);
+                tuple tempTuple0(i, mMinXYZ.y, j);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
+                New_map.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
 
-//                int height = mPerlinNoise.GetHeight(i, j);
-//                for (int k = mMinXYZ.y + 1; k < height; k++)
-//                {
-//                    BLOCK_TYPE type = DIRT;
-//                    double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
-//                    if (k <= -16 && r > 0.44f && r < 0.55f) type = STONE;
+                int height = mPerlinNoise.GetHeight(i, j);
+                for (int k = mMinXYZ.y + 1; k < height; k++)
+                {
+                    BLOCK_TYPE type = DIRT;
+                    double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
+                    if (k <= -16 && r > 0.44f && r < 0.55f) type = STONE;
 
-//                    Block* pBlock = new Block(glm::ivec3(i, k, j), type);
-//                    tuple tempTuple(i, k, j);
-//                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
-//                    New_map.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
-//                }
+                    Block* pBlock = new Block(glm::ivec3(i, k, j), type);
+                    tuple tempTuple(i, k, j);
+                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                    New_map.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                }
 
-//                // GRASS at the top
-//                Block* pBlock1 = new Block(glm::ivec3(i, height, j), GRASS);
-//                tuple tempTuple1(i, height, j);
-//                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
-//                New_map.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
-//            }
-//        }
-//        mMaxXYZ.x = mMaxXYZ.x + mNumRowNewBlocks;
-//    }
-//    else if (direction == 2)
-//    {
-//        for (int i = mMinXYZ.x; i <= mMaxXYZ.x; i++)
-//        {
-//            for (int j = mMinXYZ.z - 1; j > mMinXYZ.z - 1 - mNumRowNewBlocks; j--)
-//            {
-//                // BEDROCK at height of -128
-//                Block* pBlock0 = new Block(glm::ivec3(i, mMinXYZ.y, j), BEDROCK);
-//                tuple tempTuple0(i, mMinXYZ.y, j);
-//                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
-//                New_map.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
+                // GRASS at the top
+                Block* pBlock1 = new Block(glm::ivec3(i, height, j), GRASS);
+                tuple tempTuple1(i, height, j);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
+                New_map.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
+            }
+        }
 
-//                int height = mPerlinNoise.GetHeight(i, j);
-//                for (int k = mMinXYZ.y + 1; k < height; k++)
-//                {
-//                    BLOCK_TYPE type = DIRT;
-//                    double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
-//                    if (k <= -16 && r > 0.44f && r < 0.55f) type = STONE;
+        scopeMin.x = mMaxXYZ.x;
+        mMaxXYZ.x = mMaxXYZ.x + mNumRowNewBlocks;
+        scopeMax.x = mMaxXYZ.x;
+        if (mIsWorm)
+        {
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -32.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -64.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -96.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -48.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -16.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -112.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+        }
+    }
+    else if (direction == 2)
+    {
+        for (int i = mMinXYZ.x; i <= mMaxXYZ.x; i++)
+        {
+            for (int j = mMinXYZ.z - 1; j > mMinXYZ.z - 1 - mNumRowNewBlocks; j--)
+            {
+                // BEDROCK at height of -128
+                Block* pBlock0 = new Block(glm::ivec3(i, mMinXYZ.y, j), BEDROCK);
+                tuple tempTuple0(i, mMinXYZ.y, j);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
+                New_map.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
 
-//                    Block* pBlock = new Block(glm::ivec3(i, k, j), type);
-//                    tuple tempTuple(i, k, j);
-//                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
-//                    New_map.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
-//                }
+                int height = mPerlinNoise.GetHeight(i, j);
+                for (int k = mMinXYZ.y + 1; k < height; k++)
+                {
+                    BLOCK_TYPE type = DIRT;
+                    double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
+                    if (k <= -16 && r > 0.44f && r < 0.55f) type = STONE;
 
-//                // GRASS at the top
-//                Block* pBlock1 = new Block(glm::ivec3(i, height, j), GRASS);
-//                tuple tempTuple1(i, height, j);
-//                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
-//                New_map.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
-//            }
-//        }
-//        mMinXYZ.z = mMinXYZ.z - mNumRowNewBlocks;
-//    }
-//    else
-//    {
-//        for (int i = mMinXYZ.x; i <= mMaxXYZ.x; i++)
-//        {
-//            for (int j = mMaxXYZ.z + 1; j < mMaxXYZ.z + 1 + mNumRowNewBlocks; j++)
-//            {
-//                // BEDROCK at height of -128
-//                Block* pBlock0 = new Block(glm::ivec3(i, mMinXYZ.y, j), BEDROCK);
-//                tuple tempTuple0(i, mMinXYZ.y, j);
-//                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
-//                New_map.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
+                    Block* pBlock = new Block(glm::ivec3(i, k, j), type);
+                    tuple tempTuple(i, k, j);
+                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                    New_map.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                }
 
-//                int height = mPerlinNoise.GetHeight(i, j);
-//                for (int k = mMinXYZ.y + 1; k < height; k++)
-//                {
-//                    BLOCK_TYPE type = DIRT;
-//                    double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
-//                    if (k <= -16 && r > 0.44f && r < 0.55f) type = STONE;
+                // GRASS at the top
+                Block* pBlock1 = new Block(glm::ivec3(i, height, j), GRASS);
+                tuple tempTuple1(i, height, j);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
+                New_map.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
+            }
+        }
+        scopeMax.z = mMinXYZ.z;
+        mMinXYZ.z = mMinXYZ.z - mNumRowNewBlocks;
+        scopeMin.z = mMinXYZ.z;
+        if (mIsWorm)
+        {
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -32.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -64.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -96.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -48.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -16.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -112.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+        }
+    }
+    else
+    {
+        for (int i = mMinXYZ.x; i <= mMaxXYZ.x; i++)
+        {
+            for (int j = mMaxXYZ.z + 1; j < mMaxXYZ.z + 1 + mNumRowNewBlocks; j++)
+            {
+                // BEDROCK at height of -128
+                Block* pBlock0 = new Block(glm::ivec3(i, mMinXYZ.y, j), BEDROCK);
+                tuple tempTuple0(i, mMinXYZ.y, j);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
+                New_map.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
 
-//                    Block* pBlock = new Block(glm::ivec3(i, k, j), type);
-//                    tuple tempTuple(i, k, j);
-//                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
-//                    New_map.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
-//                }
+                int height = mPerlinNoise.GetHeight(i, j);
+                for (int k = mMinXYZ.y + 1; k < height; k++)
+                {
+                    BLOCK_TYPE type = DIRT;
+                    double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
+                    if (k <= -16 && r > 0.44f && r < 0.55f) type = STONE;
 
-//                // GRASS at the top
-//                Block* pBlock1 = new Block(glm::ivec3(i, height, j), GRASS);
-//                tuple tempTuple1(i, height, j);
-//                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
-//                New_map.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
-//            }
-//        }
-//        mMaxXYZ.z = mMaxXYZ.z + mNumRowNewBlocks;
-//    }
-    return New_map;
+                    Block* pBlock = new Block(glm::ivec3(i, k, j), type);
+                    tuple tempTuple(i, k, j);
+                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                    New_map.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                }
+
+                // GRASS at the top
+                Block* pBlock1 = new Block(glm::ivec3(i, height, j), GRASS);
+                tuple tempTuple1(i, height, j);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
+                New_map.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
+            }
+        }
+        scopeMin.z = mMaxXYZ.z;
+        mMaxXYZ.z = mMaxXYZ.z + mNumRowNewBlocks;
+        scopeMax.z = mMaxXYZ.z;
+
+        if (mIsWorm)
+        {
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -32.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -64.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -96.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -48.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -16.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+            GenerateWorm((scopeMin.x + scopeMax.x) * 0.5f, -112.f, (scopeMin.z + scopeMax.z) * 0.5f, scopeMin, scopeMax);
+        }
+    }
 }
 
