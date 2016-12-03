@@ -16,7 +16,7 @@ public:
 
     void Create();
     void clear();
-    std::map<tuple, Block *> GenerateBlocks(int direction);
+    void GenerateBlocks(int direction);
 
     glm::ivec3 mMinXYZ;
     glm::ivec3 mMaxXYZ;
@@ -27,6 +27,7 @@ public:
 
     double mRefreshDistance; // when the distance from the camera to the edge is smaller than this value, generate new blocks
     int mNumRowNewBlocks; // number of rows of the new blocks
+    bool mIsWorm;
 
     void Hollow(double centerx, double centery, double centerz, double OutsideRadius, double InsideRadius,
                 PerlinNoise &VoxelPerlinNoise, std::vector<Block *> &bottomBlock);
