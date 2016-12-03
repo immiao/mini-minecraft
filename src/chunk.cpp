@@ -845,7 +845,7 @@ void superchunk::MoveUpdate(int m, std::map<tuple, Block*> map){
             if(x >= (start_pos[0] + 63 * 16) && x <= (start_pos[0] + 64 * 16) &&
                     y >= start_pos[1] && y <= (start_pos[1] + 64 * 16) &&
                     z >= start_pos[2] && z <= (start_pos[2] + 64 * 16)){
-                set(x,y,z,int(1));
+                set(x,y,z,(int)(iter->second->mType));
             }
         }
     }
@@ -880,7 +880,7 @@ void superchunk::MoveUpdate(int m, std::map<tuple, Block*> map){
             if(x >= start_pos[0] && x <= (start_pos[0] + 16) &&
                     y >= start_pos[1] && y <= (start_pos[1] + 64 * 16) &&
                     z >= start_pos[2] && z <= (start_pos[2] + 64 * 16)){
-                set(x,y,z,int(1));
+                set(x,y,z,(int)(iter->second->mType));
             }
         }
     }
@@ -915,7 +915,7 @@ void superchunk::MoveUpdate(int m, std::map<tuple, Block*> map){
             if(x >= start_pos[0] && x <= (start_pos[0] + 64 * 16) &&
                     y >= (start_pos[1] + 63 * 16) && y <= (start_pos[1] + 64 * 16) &&
                     z >= start_pos[2] && z <= (start_pos[2] + 64 * 16)){
-                set(x,y,z,int(1));
+                set(x,y,z,(int)(iter->second->mType));
             }
         }
     }
@@ -950,7 +950,7 @@ void superchunk::MoveUpdate(int m, std::map<tuple, Block*> map){
             if(x >= start_pos[0] && x <= (start_pos[0] + 64 * 16) &&
                     y >= start_pos[1] && y <= (start_pos[1] + 16) &&
                     z >= start_pos[2] && z <= (start_pos[2] + 64 * 16)){
-                set(x,y,z,int(1));
+                set(x,y,z,(int)(iter->second->mType));
             }
         }
     }
@@ -985,7 +985,7 @@ void superchunk::MoveUpdate(int m, std::map<tuple, Block*> map){
             if(x >= start_pos[0] && x <= (start_pos[0] + 64 * 16) &&
                     y >= start_pos[1] && y <= (start_pos[1] + 64 * 16) &&
                     z >= (start_pos[2] + 63 * 16) && z <= (start_pos[2] + 64 * 16)){
-                set(x,y,z,int(1));
+                set(x,y,z,(int)(iter->second->mType));
             }
         }
     }
@@ -1020,7 +1020,7 @@ void superchunk::MoveUpdate(int m, std::map<tuple, Block*> map){
             if(x >= start_pos[0] && x <= (start_pos[0] + 64 * 16) &&
                     y >= start_pos[1] && y <= (start_pos[1] + 64 * 16) &&
                     z >= start_pos[2] && z <= (start_pos[2] + 16)){
-                set(x,y,z,int(1));
+                set(x,y,z,(int)(iter->second->mType));
             }
         }
     }

@@ -188,7 +188,7 @@ void MyGL::UpdateWhenNewTerrain(std::map<tuple, Block *> New_map){
         if(x >= grid.start_pos[0] && x <= (grid.start_pos[0] + 64 * 16) &&
                 y >= grid.start_pos[1] && y <= (grid.start_pos[1] + 64 * 16) &&
                 z >= grid.start_pos[2] && z <= (grid.start_pos[2] + 64 * 16)){
-            grid.set(x,y,z,int(1));
+            grid.set(x,y,z,(int)(iter->second->mType));
         }
     }
 }
@@ -709,77 +709,78 @@ void MyGL::timerUpdate()
 {
     if(!game_begin)
         return;
-    timeCount = timeCount++;
-    if (timeCount >= 150)
+    timeCount = (++timeCount) % 150;
+    if (timeCount % 150 == 0)
     {
-        timeCount = 0;
-        if (fabs(gl_camera.eye.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
+        if (gl_camera.cameramode!=FLYING_MODE)
         {
-           // printf("0\n");
-            std::map<tuple, Block*> New_map = scene.GenerateBlocks(0);
-            UpdateWhenNewTerrain(New_map);
-        }
-        else if (fabs(gl_camera.eye.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
-        {
-            //printf("%f %f %f\n", gl_camera.eye.x, scene.mMaxXYZ.x, scene.mRefreshDistance);
-            std::map<tuple, Block*> New_map = scene.GenerateBlocks(1);
-            UpdateWhenNewTerrain(New_map);
+            if (fabs(gl_camera.eye.x - scene.mMinXYZ.x) < scene.mRefreshDistance)
+            {
+               // printf("0\n");
+                std::map<tuple, Block*> New_map = scene.GenerateBlocks(0);
+                UpdateWhenNewTerrain(New_map);
+            }
+            else if (fabs(gl_camera.eye.x - scene.mMaxXYZ.x) < scene.mRefreshDistance)
+            {
+                //printf("%f %f %f\n", gl_camera.eye.x, scene.mMaxXYZ.x, scene.mRefreshDistance);
+                std::map<tuple, Block*> New_map = scene.GenerateBlocks(1);
+                UpdateWhenNewTerrain(New_map);
 
-        }
-        else if (fabs(gl_camera.eye.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
-        {
-            //printf("2\n");
-            std::map<tuple, Block*> New_map = scene.GenerateBlocks(2);
-            UpdateWhenNewTerrain(New_map);
+            }
+            else if (fabs(gl_camera.eye.z - scene.mMinXYZ.z) < scene.mRefreshDistance)
+            {
+                //printf("2\n");
+                std::map<tuple, Block*> New_map = scene.GenerateBlocks(2);
+                UpdateWhenNewTerrain(New_map);
 
-        }
-        else if (fabs(gl_camera.eye.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
-        {
-            //printf("3\n");
-            std::map<tuple, Block*> New_map = scene.GenerateBlocks(3);
-            UpdateWhenNewTerrain(New_map);
+            }
+            else if (fabs(gl_camera.eye.z - scene.mMaxXYZ.z) < scene.mRefreshDistance)
+            {
+                //printf("3\n");
+                std::map<tuple, Block*> New_map = scene.GenerateBlocks(3);
+                UpdateWhenNewTerrain(New_map);
 
-        }
-        //printf("x:%f z:%f\n", gl_camera.eye.x, gl_camera.eye.z);
-        //Test whether need to update the superchunk
-        if(gl_camera.eye.x - grid.start_pos[0] > 33 * 16){
-            // +x out of bounds
-    //        std::cout<<"0\n";
-            grid.MoveUpdate(0, scene.mSceneMap);
-            this->update();
-        }
-        else if(gl_camera.eye.x - grid.start_pos[0] < 32 * 16){
-            // -x out of bounds
-    //        std::cout<<"1\n";
-            grid.MoveUpdate(1, scene.mSceneMap);
-            this->update();
-        }
-        else if(gl_camera.eye.y - grid.start_pos[1] > 33 * 16){
-            // +y out of bounds
-    //        std::cout<<"2\n";
-            grid.MoveUpdate(2, scene.mSceneMap);
-            this->update();
-        }
-        else if(gl_camera.eye.y - grid.start_pos[1] < 32 * 16){
-    //        std::cout<<"3\n";
-            // -y out of bounds
-            grid.MoveUpdate(3, scene.mSceneMap);
-            this->update();
-        }
-        else if(gl_camera.eye.z - grid.start_pos[2] > 33 * 16){
-            // +z out of bounds
-    //        std::cout<<"4\n";
-            grid.MoveUpdate(4, scene.mSceneMap);
-            this->update();
+            }
+            //printf("x:%f z:%f\n", gl_camera.eye.x, gl_camera.eye.z);
+            //Test whether need to update the superchunk
+            if(gl_camera.eye.x - grid.start_pos[0] > 33 * 16){
+                // +x out of bounds
+        //        std::cout<<"0\n";
+                grid.MoveUpdate(0, scene.mSceneMap);
+                this->update();
+            }
+            else if(gl_camera.eye.x - grid.start_pos[0] < 32 * 16){
+                // -x out of bounds
+        //        std::cout<<"1\n";
+                grid.MoveUpdate(1, scene.mSceneMap);
+                this->update();
+            }
+            else if(gl_camera.eye.y - grid.start_pos[1] > 33 * 16){
+                // +y out of bounds
+        //        std::cout<<"2\n";
+                grid.MoveUpdate(2, scene.mSceneMap);
+                this->update();
+            }
+            else if(gl_camera.eye.y - grid.start_pos[1] < 32 * 16){
+        //        std::cout<<"3\n";
+                // -y out of bounds
+                grid.MoveUpdate(3, scene.mSceneMap);
+                this->update();
+            }
+            else if(gl_camera.eye.z - grid.start_pos[2] > 33 * 16){
+                // +z out of bounds
+        //        std::cout<<"4\n";
+                grid.MoveUpdate(4, scene.mSceneMap);
+                this->update();
 
+            }
+            else if(gl_camera.eye.z - grid.start_pos[2] < 32 * 16){
+                // -z out of bounds
+        //        std::cout<<"5\n";
+                grid.MoveUpdate(5, scene.mSceneMap);
+                this->update();
+            }
         }
-        else if(gl_camera.eye.z - grid.start_pos[2] < 32 * 16){
-            // -z out of bounds
-    //        std::cout<<"5\n";
-            grid.MoveUpdate(5, scene.mSceneMap);
-            this->update();
-        }
-
     }
     prog_new.setTime(timeCount);
 
