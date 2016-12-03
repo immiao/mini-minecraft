@@ -382,8 +382,8 @@ void chunk::update(){
                     pos2 = glm::vec3(x+0.5f   ,y-0.5f  ,z+0.5f);
                     pos3 = glm::vec3(x-0.5f   ,y-0.5f  ,z+0.5f);
                     uv1  = glm::vec2(1.0f / 16.0f - epsilon_value, 1.0f / 16.0f - epsilon_value + epsilon_value) + offset_bottom;
-                    uv2  = glm::vec2(1.0f / 16.0f - epsilon_value, 0.0f) + offset_bottom;
-                    uv3  = glm::vec2(0.0f, 0.0f) + offset_bottom;
+                    uv2  = glm::vec2(1.0f / 16.0f - epsilon_value, 0.0f + epsilon_value) + offset_bottom;
+                    uv3  = glm::vec2(0.0f + epsilon_value, 0.0f + epsilon_value) + offset_bottom;
                     //Compute tang and bitang:
                     edge1 = pos2 - pos1;
                     edge2 = pos3 - pos1;
