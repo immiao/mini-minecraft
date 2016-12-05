@@ -19,7 +19,9 @@ SOURCES += \
     $$PWD/chunk.cpp \
     $$PWD/scene/transform.cpp \
     $$PWD/scene/screen_center.cpp \
-    $$PWD/scene/screen_triangles.cpp
+    $$PWD/scene/screen_triangles.cpp \
+    $$PWD/scene/riversystem.cpp \
+    $$PWD/direction.cpp
 HEADERS += \
     $$PWD/la.h \
     $$PWD/mainwindow.h \
@@ -36,4 +38,6 @@ HEADERS += \
     $$PWD/perlinnoise.h \
     $$PWD/chunk.h       \
     $$PWD/scene/screen_center.h \
-    $$PWD/scene/screen_triangles.h
+    $$PWD/scene/screen_triangles.h \
+    $$PWD/scene/riversystem.h \
+    $$PWD/direction.h

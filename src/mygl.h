@@ -6,17 +6,14 @@
 #include <shaderprogram.h>
 #include <scene/cube.h>
 #include "camera.h"
+#include <direction.h>
 #include <scene/scene.h>
+#include<scene/riversystem.h>
 #include <scene/screen_center.h>
 #include <scene/screen_triangles.h>
 #include <chunk.h>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
-
-#define LEFT 0
-#define RIGHT 1
-#define FORWARD 2
-#define BACK 3
 
 #define BODYEDGE_ERROR 0.05f
 #define BLOCKEDGE_ERROR 0.02f
@@ -35,6 +32,7 @@ private:
 
     Camera gl_camera;
     Scene scene;
+    RiverSystem Rivers;
     superchunk grid;
     Screen_Center center;
     Screen_Triangles T;
@@ -65,6 +63,7 @@ public:
     void GLDrawScene();
     void initializeGrid();
     void UpdateWhenNewTerrain(std::map<tuple, Block *> &New_map);
+
 
     void breakblocks(QPoint screen_pos,int distance_max);
     void addblocks(QPoint screen_pos,int distance_max);

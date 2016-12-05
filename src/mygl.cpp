@@ -8,13 +8,14 @@
 #include <math.h>
 #include<QMessageBox>
 #include <QDir>
+#include<time.h>
 
 #include <SOIL.h>
 
 const int MaxReachDistance=8;
 MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
-      gl_camera(), geom_cube(this),center(this),T(this),
+      gl_camera(), geom_cube(this),Rivers(&scene),center(this),T(this),
       prog_lambert(this), prog_flat(this), prog_new(this),
       grid(this),mousemove(false),game_begin(false),jump_state(false),
       g_velocity(0),external_force_acceleration(-gravity_acceleration),
@@ -87,6 +88,9 @@ void MyGL::initializeGL()
         keyboard[i]=false;
 
     scene.Create();
+    Rivers.L_System_River(glm::vec3(70,0,70),10,150,LEFT,STRAIGHT_RIVER);
+    Rivers.L_System_River(glm::vec3(0,0,-70),3,100,FORWARD,WINDING_RIVER);
+
     center.InitializeScreenSize(width(),height());
     T.InitializeScreenSize(width(),height());
     center.create();
@@ -192,6 +196,7 @@ void MyGL::UpdateWhenNewTerrain(std::map<tuple, Block *> &New_map){
         }
     }
 }
+
 
 void MyGL::breakblocks(QPoint screen_pos, int distance_max)
 {
@@ -299,6 +304,7 @@ void MyGL::addblocks(QPoint screen_pos, int distance_max)
     }
 
 }
+
 bool MyGL::collision_test(int direction,float step)
 {
     glm::vec3 pos1,pos2,pos3,pos4,pos5,pos6,p1,p2;
@@ -427,7 +433,7 @@ bool MyGL::boundarytest()
 }
 void MyGL::Keyevents()
 {
-    float amount=0.5f;
+    float amount=0.25f;
     if(keyboard[0])
         amount=2.0f;
     if(keyboard[1])             //  Key_Escape
@@ -554,11 +560,11 @@ void MyGL::Keyevents()
             }
         }
     }
-    if (keyboard[17])             //Key_R
-        gl_camera = Camera(this->width(), this->height(),\
-                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
-                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
-                           glm::vec3(0,1,0));
+//    if (keyboard[17])             //Key_R
+//        gl_camera = Camera(this->width(), this->height(),\
+//                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2 + 1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2),
+//                           glm::vec3((scene.mMaxXYZ.x - scene.mMinXYZ.x)/2, (scene.mMaxXYZ.y - scene.mMinXYZ.y)/2+1, (scene.mMaxXYZ.z - scene.mMinXYZ.z)/2+1),\
+//                           glm::vec3(0,1,0));
     gl_camera.RecomputeAttributes();
     update();
 }
@@ -637,7 +643,7 @@ void MyGL::mouseMoveEvent(QMouseEvent *event)
     gl_camera.RotateAboutUp(-theta);
     gl_camera.RotateAboutRight(-fai);
     gl_camera.RecomputeAttributes();
-    update();
+    //update();
 
     //printf("%f %f %d %f\n", gl_camera.ref.x, gl_camera.ref.z, scene.mMinXYZ.z, fabs(gl_camera.ref.z - scene.mMinXYZ.z));
 }
@@ -743,43 +749,43 @@ void MyGL::timerUpdate()
             }
             //printf("x:%f z:%f\n", gl_camera.eye.x, gl_camera.eye.z);
             //Test whether need to update the superchunk
-            if(gl_camera.eye.x - grid.start_pos[0] > 33 * 16){
-                // +x out of bounds
-        //        std::cout<<"0\n";
-                grid.MoveUpdate(0, scene.mSceneMap);
-                this->update();
-            }
-            else if(gl_camera.eye.x - grid.start_pos[0] < 32 * 16){
-                // -x out of bounds
-        //        std::cout<<"1\n";
-                grid.MoveUpdate(1, scene.mSceneMap);
-                this->update();
-            }
-            else if(gl_camera.eye.y - grid.start_pos[1] > 33 * 16){
-                // +y out of bounds
-        //        std::cout<<"2\n";
-                grid.MoveUpdate(2, scene.mSceneMap);
-                this->update();
-            }
-            else if(gl_camera.eye.y - grid.start_pos[1] < 32 * 16){
-        //        std::cout<<"3\n";
-                // -y out of bounds
-                grid.MoveUpdate(3, scene.mSceneMap);
-                this->update();
-            }
-            else if(gl_camera.eye.z - grid.start_pos[2] > 33 * 16){
-                // +z out of bounds
-        //        std::cout<<"4\n";
-                grid.MoveUpdate(4, scene.mSceneMap);
-                this->update();
+//            if(gl_camera.eye.x - grid.start_pos[0] > 33 * 16){
+//                // +x out of bounds
+//        //        std::cout<<"0\n";
+//                grid.MoveUpdate(0, scene.mSceneMap);
+//                this->update();
+//            }
+//            else if(gl_camera.eye.x - grid.start_pos[0] < 32 * 16){
+//                // -x out of bounds
+//        //        std::cout<<"1\n";
+//                grid.MoveUpdate(1, scene.mSceneMap);
+//                this->update();
+//            }
+//            else if(gl_camera.eye.y - grid.start_pos[1] > 33 * 16){
+//                // +y out of bounds
+//        //        std::cout<<"2\n";
+//                grid.MoveUpdate(2, scene.mSceneMap);
+//                this->update();
+//            }
+//            else if(gl_camera.eye.y - grid.start_pos[1] < 32 * 16){
+//        //        std::cout<<"3\n";
+//                // -y out of bounds
+//                grid.MoveUpdate(3, scene.mSceneMap);
+//                this->update();
+//            }
+//            else if(gl_camera.eye.z - grid.start_pos[2] > 33 * 16){
+//                // +z out of bounds
+//        //        std::cout<<"4\n";
+//                grid.MoveUpdate(4, scene.mSceneMap);
+//                this->update();
 
-            }
-            else if(gl_camera.eye.z - grid.start_pos[2] < 32 * 16){
-                // -z out of bounds
-        //        std::cout<<"5\n";
-                grid.MoveUpdate(5, scene.mSceneMap);
-                this->update();
-            }
+//            }
+//            else if(gl_camera.eye.z - grid.start_pos[2] < 32 * 16){
+//                // -z out of bounds
+//        //        std::cout<<"5\n";
+//                grid.MoveUpdate(5, scene.mSceneMap);
+//                this->update();
+//            }
         }
     }
     prog_new.setTime(timeCount);
