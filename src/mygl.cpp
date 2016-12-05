@@ -434,6 +434,7 @@ bool MyGL::boundarytest()
 void MyGL::Keyevents()
 {
     float amount=0.25f;
+    float flyingAmount = 1.0f;
     if(keyboard[0])
         amount=2.0f;
     if(keyboard[1])             //  Key_Escape
@@ -446,7 +447,7 @@ void MyGL::Keyevents()
     {
         //gl_camera.RotateAboutRight(-amount);
         if(gl_camera.cameramode==FLYING_MODE)
-            gl_camera.TranslateAlongLook(amount);
+            gl_camera.TranslateAlongLook(flyingAmount);
         else
         {
             if(collision_test(FORWARD,amount))
@@ -462,7 +463,7 @@ void MyGL::Keyevents()
     {
         //gl_camera.RotateAboutRight(amount);
         if(gl_camera.cameramode==FLYING_MODE)
-            gl_camera.TranslateAlongLook(-amount);
+            gl_camera.TranslateAlongLook(-flyingAmount);
         else
         {
             if(collision_test(BACK,-amount))
@@ -481,7 +482,7 @@ void MyGL::Keyevents()
     if (keyboard[10])           //Key_W
     {
         if(gl_camera.cameramode==FLYING_MODE)
-            gl_camera.TranslateAlongLook(amount);
+            gl_camera.TranslateAlongLook(flyingAmount);
         else
         {
             if(collision_test(FORWARD,amount))
@@ -496,7 +497,7 @@ void MyGL::Keyevents()
     if (keyboard[11])           //Key_S
     {
         if(gl_camera.cameramode==FLYING_MODE)
-            gl_camera.TranslateAlongLook(-amount);
+            gl_camera.TranslateAlongLook(-flyingAmount);
         else
         {
             if(collision_test(BACK,-amount))
@@ -511,7 +512,7 @@ void MyGL::Keyevents()
     if (keyboard[12])           //Key_D
     {
         if(gl_camera.cameramode==FLYING_MODE)
-            gl_camera.TranslateAlongRight(amount);
+            gl_camera.TranslateAlongRight(flyingAmount);
         else
         {
             if(collision_test(RIGHT,amount))
@@ -526,7 +527,7 @@ void MyGL::Keyevents()
     if (keyboard[13])           //Key_A
     {
         if(gl_camera.cameramode==FLYING_MODE)
-            gl_camera.TranslateAlongRight(-amount);
+            gl_camera.TranslateAlongRight(-flyingAmount);
         else
         {
             if(collision_test(LEFT,-amount))

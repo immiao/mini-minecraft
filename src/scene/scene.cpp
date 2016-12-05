@@ -93,7 +93,7 @@ void Scene::Hollow(double centerx, double centery, double centerz, double Outsid
 
 void Scene::GenerateWorm(double wormx, double wormy, double wormz, glm::ivec3 &scopeMin, glm::ivec3 &scopeMax)
 {
-    const int rr_beginSteps = 30;
+    const int rr_beginSteps = 100;
     int steps = 0;
     srand(time(NULL));
     const double OutsideRadius = 5.0f;
