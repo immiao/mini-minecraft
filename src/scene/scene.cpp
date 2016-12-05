@@ -98,7 +98,7 @@ void Scene::GenerateWorm(double wormx, double wormy, double wormz, glm::ivec3 &s
     srand(time(NULL));
     const double OutsideRadius = 5.0f;
     const double InsideRadius = 3.0f;
-    const double stepScale = 20.0f;
+    const double stepScale = 15.0f;
     const double yScale = 5.0f;
     PerlinNoise WormPerlinNoise(0.5, 1.0, 1.0, 6, 0);
     PerlinNoise MinePerlinNoise(0.5, 1.0, 1.0, 4, 0);
