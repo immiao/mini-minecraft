@@ -146,6 +146,24 @@ void chunk::setTextureOffset(glm::vec2 &offset_top, glm::vec2 &offset_bottom, gl
         offset_bottom += 12.0f * glm::vec2(0.0f, 1.0f / 16.0f);
 //        cosine_power = 4.0f;
     }
+    else if(type == 11){
+        //SAND
+        offset_top += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+        offset_top += 1.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+        offset_side += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+        offset_side += 1.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+        offset_bottom += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+        offset_bottom += 1.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+    }
+    else if(type == 12){
+        //SNOW
+        offset_top += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+        offset_top += 4.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+        offset_side += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+        offset_side += 4.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+        offset_bottom += 2.0f * glm::vec2(1.0f / 16.0f, 0.0f);
+        offset_bottom += 4.0f * glm::vec2(0.0f, 1.0f / 16.0f);
+    }
 }
 
 void chunk::update(){
@@ -812,6 +830,7 @@ void superchunk::MoveUpdate(int m, std::map<tuple, Block*> map){
         for(int y = 0; y < SCY; y++)
             for(int z = 0; z < SCZ; z++){
                 if(cl[0][y][z]){
+                    cl[0][y][z]->context->glDeleteBuffers(1,&(cl[0][y][z]->vbo));
                     delete cl[0][y][z];
                     cl[0][y][z] = nullptr;
                 }
@@ -834,21 +853,21 @@ void superchunk::MoveUpdate(int m, std::map<tuple, Block*> map){
             // iter->first is a tuple
             // std::get<index>(tuple) can get the elements in the tuple
             int x = std::get<0>(iter->first), y = std::get<1>(iter->first), z = std::get<2>(iter->first);
-            if(x >= (start_pos[0] + 63 * 16) && x <= (start_pos[0] + 64 * 16) &&
-                    y >= start_pos[1] && y <= (start_pos[1] + 64 * 16) &&
-                    z >= start_pos[2] && z <= (start_pos[2] + 64 * 16)){
+            if(x >= (start_pos[0] + (SCX-1) * CX) && x <= (start_pos[0] + (SCX) * CX) &&
+                    y >= start_pos[1] && y <= (start_pos[1] + SCY * CY) &&
+                    z >= start_pos[2] && z <= (start_pos[2] + SCZ * CZ)){
                 set(x,y,z,(int)(iter->second->mType));
             }
         }
     }
     else if(m == 1){
         //set the new start_pos
-        start_pos = start_pos + glm::vec3(-16,0,0);
+        start_pos = start_pos + glm::vec3(-CX,0,0);
         //delete the +x-end line
         for(int y = 0; y < SCY; y++)
             for(int z = 0; z < SCZ; z++){
-                if(cl[63][y][z]){
-                    cl[63][y][z] = nullptr;
+                if(cl[SCX-1][y][z]){
+                    cl[SCX - 1][y][z] = nullptr;
                 }
             }
         //shift to +x
@@ -869,16 +888,16 @@ void superchunk::MoveUpdate(int m, std::map<tuple, Block*> map){
             // iter->first is a tuple
             // std::get<index>(tuple) can get the elements in the tuple
             int x = std::get<0>(iter->first), y = std::get<1>(iter->first), z = std::get<2>(iter->first);
-            if(x >= start_pos[0] && x <= (start_pos[0] + 16) &&
-                    y >= start_pos[1] && y <= (start_pos[1] + 64 * 16) &&
-                    z >= start_pos[2] && z <= (start_pos[2] + 64 * 16)){
+            if(x >= start_pos[0] && x <= (start_pos[0] + CX) &&
+                    y >= start_pos[1] && y <= (start_pos[1] + SCY * CY) &&
+                    z >= start_pos[2] && z <= (start_pos[2] + SCZ * CZ)){
                 set(x,y,z,(int)(iter->second->mType));
             }
         }
     }
     else if(m == 2){
         //set the new start_pos
-        start_pos = start_pos + glm::vec3(0,16,0);
+        start_pos = start_pos + glm::vec3(0,CY,0);
         //delete the -y-end line
         for(int x = 0; x < SCX; x++)
             for(int z = 0; z < SCZ; z++){
@@ -904,21 +923,21 @@ void superchunk::MoveUpdate(int m, std::map<tuple, Block*> map){
             // iter->first is a tuple
             // std::get<index>(tuple) can get the elements in the tuple
             int x = std::get<0>(iter->first), y = std::get<1>(iter->first), z = std::get<2>(iter->first);
-            if(x >= start_pos[0] && x <= (start_pos[0] + 64 * 16) &&
-                    y >= (start_pos[1] + 63 * 16) && y <= (start_pos[1] + 64 * 16) &&
-                    z >= start_pos[2] && z <= (start_pos[2] + 64 * 16)){
+            if(x >= start_pos[0] && x <= (start_pos[0] + SCX * CX) &&
+                    y >= (start_pos[1] + (SCY-1) * CY) && y <= (start_pos[1] + SCY * CY) &&
+                    z >= start_pos[2] && z <= (start_pos[2] + SCZ * CZ)){
                 set(x,y,z,(int)(iter->second->mType));
             }
         }
     }
     else if(m == 3){
         //set the new start_pos
-        start_pos = start_pos + glm::vec3(0,-16,0);
+        start_pos = start_pos + glm::vec3(0,-CY,0);
         //delete the +y-end line
         for(int x = 0; x < SCX; x++)
             for(int z = 0; z < SCZ; z++){
-                if(cl[x][63][z]){
-                    cl[x][63][z] = nullptr;
+                if(cl[x][SCY-1][z]){
+                    cl[x][SCY-1][z] = nullptr;
                 }
             }
         //shift to +x
