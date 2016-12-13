@@ -45,7 +45,7 @@ out vec4 fs_Nor;
 
 flat out int IsFluid;
 
-vec4 lightDir = vec4(50,50,50
+vec4 lightDir = vec4(100,100,150
                            ,0);  // The direction of our virtual light, which is used to compute the shading of
                                         // the geometry in the fragment shader.
 
@@ -73,11 +73,11 @@ void main()
 
     if((u_DayTime < 625 && u_OpenDNcycle == 1)){
         //Day to Night
-        fs_LightVec1 = vec4(50.0f - 100.0f / 625.0f * u_DayTime, 50.0f, 50.0f - 100.0f / 625.0f * u_DayTime, 1.0f);
+        fs_LightVec1 = vec4(100.0f - 200.0f / 625.0f * u_DayTime, 100.0f, 150.0f - 200.0f / 625.0f * u_DayTime, 1.0f);
     }
     else if(u_DayTime >= 625 && u_OpenDNcycle == 1){
         //Night to Day
-        fs_LightVec1 = vec4(-50.0f + 100.0f / 625.0f * (u_DayTime - 625), 50.0f, -50.0f + 100.0f / 625.0f * (u_DayTime - 625), 1.0f);
+        fs_LightVec1 = vec4(-100.0f + 200.0f / 625.0f * (u_DayTime - 625), 100.0f, -50.0f + 200.0f / 625.0f * (u_DayTime - 625), 1.0f);
     }
     else
         fs_LightVec1 = lightDir;

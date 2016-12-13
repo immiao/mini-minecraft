@@ -379,8 +379,8 @@ void ShaderProgram::ComputeLightPVMatrix(int Daytime){
     //    The Projection matrix is an orthographic matrix which will encompass everything in the axis-aligned box (-10,10),(-10,10),(-10,20) on the X,Y and Z axes respectively. These values are made so that our entire *visible *scene is always visible ; more on this in the Going Further section.
     //    The View matrix rotates the world so that in camera space, the light direction is -Z (would you like to re-read Tutorial 3 ?)
     //    The Model matrix is whatever you want.
-        GLfloat near_plane = -10.0f, far_plane = 200.0f;
-        GLfloat width = 70.0f;
+        GLfloat near_plane = 50.0f, far_plane = 200.0f;
+        GLfloat width = 100.0f;
         glm::mat4 lightProjection = glm::ortho(-width, width, -width, width, near_plane, far_plane);
 
         if(Daytime < 625){
@@ -396,8 +396,8 @@ void ShaderProgram::ComputeLightPVMatrix(int Daytime){
 
             //Compute the light direction(ViewMatrix):
             int HalfDaytime = Daytime / 2;
-            glm::mat4 lightView = glm::lookAt(glm::vec3( 50.0f - 100.0f/312.0f * HalfDaytime, 50.0f,  50.0f - 100.0f/312.0f * HalfDaytime),
-                                              glm::vec3( 0.0f, 0.0f,  0.0f),
+            glm::mat4 lightView = glm::lookAt(glm::vec3( 0.0f - 200.0f/312.0f * HalfDaytime, 100.0f,  50.0f - 200.0f/312.0f * HalfDaytime),
+                                              glm::vec3( -100.0f, 0.0f,  -100.0f),
                                               glm::vec3( 0.0f, 1.0f,  0.0f));
             lightSpaceMatrix = lightProjection * lightView;
         }
@@ -413,8 +413,8 @@ void ShaderProgram::ComputeLightPVMatrix(int Daytime){
 
             //Compute the light direction(ViewMatrix):
             int HalfDaytime = Daytime / 2;
-            glm::mat4 lightView = glm::lookAt(glm::vec3( -50.0f + 100.0f/312.0f * (HalfDaytime - 312), 50.0f,  -50.0f + 100.0f/312.0f * (HalfDaytime-312)),
-                                              glm::vec3( 0.0f, 0.0f,  0.0f),
+            glm::mat4 lightView = glm::lookAt(glm::vec3( -200.0f + 200.0f/312.0f * (HalfDaytime - 312), 100.0f,  -150.0f + 200.0f/312.0f * (HalfDaytime-312)),
+                                              glm::vec3( -100.0f, 0.0f,  -100.0f),
                                               glm::vec3( 0.0f, 1.0f,  0.0f));
             lightSpaceMatrix = lightProjection * lightView;
         }
