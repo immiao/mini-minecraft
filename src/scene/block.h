@@ -15,7 +15,9 @@ enum BLOCK_TYPE
     COAL,
     IRON_ORE,
     LAVA,
-    WATER
+    WATER,
+    SAND,
+    SNOW,
 };
 
 class Block

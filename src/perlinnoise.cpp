@@ -21,6 +21,9 @@ PerlinNoise::PerlinNoise(double _persistence, double _frequency, double _amplitu
 
 int PerlinNoise::GetHeight(int i, int j)
 {
+    int centerx = -50;
+    int centery = -50;
+
     double t = 0.0f;
     double _amplitude = 1;
     double freq = frequency;
@@ -33,11 +36,31 @@ int PerlinNoise::GetHeight(int i, int j)
     }
     //printf("%lf\n", t);
     t /= octaves;
+    t = (t + 1) * 0.5;
 //    if (t > 1)
     //printf("%lf\n", t);
-    t = (t + 1) * 0.5;
-    t=pow(t,3.3);
-    t *= scale;
+    if (i >= centerx && j >= centery)
+    {
+        t=pow(t,3.3);
+        t *= scale;
+    }
+    else if (i >= centerx && j < centery)
+    {
+        t=pow(t, 6);
+        t *= scale;
+    }
+    else if (i < centerx && j >= centery)
+    {
+        t=pow(t,3.3);
+        t *= 50;
+        if (t < 5)
+            t = 0;
+    }
+    else
+    {
+        t=pow(t,3.3);
+        t *= 300;
+    }
     return t;
 }
 

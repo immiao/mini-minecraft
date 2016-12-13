@@ -8,9 +8,9 @@ double distance(double a0, double a1, double a2, int b0, int b1, int b2)
     return sqrt((a0 - b0) * (a0 - b0) + (a1 - b1) * (a1 - b1) + (a2 - b2) * (a2 - b2));
 }
 
-Scene::Scene() : mMinXYZ(-50,-4, -50), mMaxXYZ(50, 3, 50), mPerlinNoise(0.5, 1.0, 1.0, 6, 100), mRefreshDistance(5), mNumRowNewBlocks(30)
+Scene::Scene() : mMinXYZ(-150,-4, -150), mMaxXYZ(50, 3, 50), mPerlinNoise(0.5, 1.0, 1.0, 6, 100), mRefreshDistance(5), mNumRowNewBlocks(30)
 {
-    mIsWorm = true;
+    mIsWorm = false;
 }
 
 Scene::~Scene()
@@ -151,31 +151,114 @@ void Scene::GenerateWorm(double wormx, double wormy, double wormz, glm::ivec3 &s
 void Scene::Create()
 {
     PerlinNoise VoxelPerlinNoise(0.5, 1.0, 1.0, 6, 0);
+    int centerx = (mMinXYZ.x + mMaxXYZ.x) * 0.5f;
+    int centerz = (mMinXYZ.z + mMaxXYZ.z) * 0.5f;
+
     for (int i = mMinXYZ.x; i <= mMaxXYZ.x; i++)
     {
         for (int j = mMinXYZ.z; j <= mMaxXYZ.z; j++)
         {
             // BEDROCK at height of -128
-            Block* pBlock0 = new Block(glm::ivec3(i, mMinXYZ.y, j), BEDROCK);
-            tuple tempTuple0(i, mMinXYZ.y, j);
-            mSceneMap.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
-
-            int height = mPerlinNoise.GetHeight(i, j);
-            for (int k = mMinXYZ.y + 1; k < height; k++)
+            if (i >= centerx && j >= centerz)
             {
-                BLOCK_TYPE type = DIRT;
-                double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
-                if (k <= -16 && r > 0.44f && r < 0.55f) type = STONE;
+                Block* pBlock0 = new Block(glm::ivec3(i, mMinXYZ.y, j), BEDROCK);
+                tuple tempTuple0(i, mMinXYZ.y, j);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
 
-                Block* pBlock = new Block(glm::ivec3(i, k, j), type);
-                tuple tempTuple(i, k, j);
-                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                int height = mPerlinNoise.GetHeight(i, j);
+                for (int k = mMinXYZ.y + 1; k < height; k++)
+                {
+                    BLOCK_TYPE type = DIRT;
+                    double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
+                    if (k <= -16 && r > 0.44f && r < 0.55f) type = STONE;
+
+                    Block* pBlock = new Block(glm::ivec3(i, k, j), type);
+                    tuple tempTuple(i, k, j);
+                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                }
+
+                // GRASS at the top
+                Block* pBlock1 = new Block(glm::ivec3(i, height, j), GRASS);
+                tuple tempTuple1(i, height, j);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
             }
+            else if (i >= centerx && j < centerz)
+            {
+                Block* pBlock0 = new Block(glm::ivec3(i, mMinXYZ.y, j), BEDROCK);
+                tuple tempTuple0(i, mMinXYZ.y, j);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
 
-            // GRASS at the top
-            Block* pBlock1 = new Block(glm::ivec3(i, height, j), GRASS);
-            tuple tempTuple1(i, height, j);
-            mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
+                int height = mPerlinNoise.GetHeight(i, j);
+                for (int k = mMinXYZ.y + 1; k <= height; k++)
+                {
+                    BLOCK_TYPE type = SAND;
+                    Block* pBlock = new Block(glm::ivec3(i, k, j), type);
+                    tuple tempTuple(i, k, j);
+                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                }
+
+            }
+            else if (i < centerx && j >= centerz)
+            {
+
+                Block* pBlock0 = new Block(glm::ivec3(i, mMinXYZ.y, j), BEDROCK);
+                tuple tempTuple0(i, mMinXYZ.y, j);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
+
+                int height = mPerlinNoise.GetHeight(i, j);
+                for (int k = mMinXYZ.y + 1; k < height; k++)
+                {
+                    BLOCK_TYPE type = DIRT;
+                    double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
+                    if (k <= -16 && r > 0.44f && r < 0.55f) type = STONE;
+
+                    Block* pBlock = new Block(glm::ivec3(i, k, j), type);
+                    tuple tempTuple(i, k, j);
+                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                }
+
+                // GRASS at the top
+                if (height == 0)
+                {
+                    Block* pBlock1 = new Block(glm::ivec3(i, height, j), WATER);
+                    tuple tempTuple1(i, height, j);
+                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
+                }
+                else
+                {
+                    Block* pBlock1 = new Block(glm::ivec3(i, height, j), GRASS);
+                    tuple tempTuple1(i, height, j);
+                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
+                }
+            }
+            else
+            {
+                Block* pBlock0 = new Block(glm::ivec3(i, mMinXYZ.y, j), BEDROCK);
+                tuple tempTuple0(i, mMinXYZ.y, j);
+                mSceneMap.insert(std::pair<tuple, Block*>(tempTuple0, pBlock0));
+
+                int height = mPerlinNoise.GetHeight(i, j);
+                int snowHeight = rand() % 10 + 20;
+                for (int k = mMinXYZ.y + 1; k < height; k++)
+                {
+                    BLOCK_TYPE type = DIRT;
+                    double r = (VoxelPerlinNoise.GetPerlinNoise(k, j, i) + 1) * 0.5f;
+                    if (k <= -16 && r > 0.44f && r < 0.55f) type = STONE;
+                    else if (k >= snowHeight) type = SNOW;
+
+                    Block* pBlock = new Block(glm::ivec3(i, k, j), type);
+                    tuple tempTuple(i, k, j);
+                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple, pBlock));
+                }
+
+                // GRASS at the top
+                if (height < snowHeight)
+                {
+                    Block* pBlock1 = new Block(glm::ivec3(i, height, j), GRASS);
+                    tuple tempTuple1(i, height, j);
+                    mSceneMap.insert(std::pair<tuple, Block*>(tempTuple1, pBlock1));
+                }
+            }
         }
     }
 
