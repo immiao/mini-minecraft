@@ -16,7 +16,7 @@ const int MaxReachDistance=8;
 MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
       gl_camera(), geom_cube(this),Rivers(&scene),center(this),T(this),
-      prog_lambert(this), prog_flat(this), prog_new(this),
+      prog_lambert(this), prog_flat(this), prog_new(this), prog_shadow(this),
       grid(this),mousemove(false),game_begin(false),jump_state(false),
       g_velocity(0),external_force_acceleration(-gravity_acceleration),
       character_size(0,0,0)
@@ -55,6 +55,7 @@ void MyGL::initializeGL()
     // Set the size with which points should be rendered
     glPointSize(5);
     // Set the color with which the screen is filled at the start of each render call.
+//25.25.112
     glClearColor(0.37f, 0.74f, 1.0f, 1);
 
     printGLErrorLog();
@@ -71,12 +72,14 @@ void MyGL::initializeGL()
     prog_flat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
 
     prog_new.create(":/glsl/new.vert.glsl", ":/glsl/new.frag.glsl");
+
+    prog_shadow.create(":/glsl/shadow.vert.glsl", ":/glsl/shadow.frag.glsl");
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
     // This makes your geometry render green.
     prog_lambert.setGeometryColor(glm::vec4(0,1,0,1));
     prog_new.setGeometryColor(glm::vec4(0,1,0,1));
-
+    prog_shadow.setGeometryColor(glm::vec4(0,1,0,1));
     //prog_new.setTexture();
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
@@ -123,22 +126,53 @@ void MyGL::paintGL()
 {
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+//Shadow Pass
     prog_lambert.setViewProjMatrix(gl_camera.getViewProj());
+    prog_shadow.setShadowTexture();
+    if(OpenDNcycle == 1)
+        prog_shadow.ComputeLightPVMatrix(Daytime);
+    else
+        prog_shadow.ComputeLightPVMatrix(0);
+    prog_shadow.setShadowBias_PVmatrix(Daytime);
+    glViewport(0, 0, prog_shadow.SHADOW_WIDTH, prog_shadow.SHADOW_HEIGHT);
+    prog_shadow.context->glBindFramebuffer(GL_FRAMEBUFFER, prog_shadow.depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glCullFace(GL_FRONT);
+    grid.render(prog_shadow, gl_camera.getViewProj(), false);
+
+//Render Pass
+    glViewport(0, 0, this->width(), this->height());
+    prog_new.context->glBindFramebuffer(GL_FRAMEBUFFER, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     prog_new.setViewProjMatrix(gl_camera.getViewProj());
     prog_new.setViewPos(gl_camera.eye);
-    prog_new.setTexture();
-    grid.render(prog_new, gl_camera.getViewProj());
-    prog_new.deleteTexture();
+    prog_new.setTexture(prog_shadow.depthMap);
+    //Open DNcycle or not
+    if(OpenDNcycle == 1){
+        prog_new.setDNcycle(OpenDNcycle);
+        prog_new.ComputeLightPVMatrix(Daytime);
+    }
+    else{
+        prog_new.setDNcycle(OpenDNcycle);
+        prog_new.ComputeLightPVMatrix(0);
+    }
+    prog_new.setShadowBias_PVmatrix(Daytime);
+    glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+    grid.render(prog_new, gl_camera.getViewProj(), true);
+//Release the memory
+    glDisable(GL_CULL_FACE);
+    prog_new.deleteTexture(prog_shadow.depthMap);
+    prog_shadow.context->glDeleteFramebuffers(1, &prog_shadow.depthMapFBO);
 
 //    GLDrawScene();
 
-    prog_flat.setViewProjMatrix(glm::mat4(1));
     prog_flat.setModelMatrix(glm::mat4(1));
 
     glDisable(GL_DEPTH_TEST);
     prog_flat.draw(center);
-    prog_flat.draw(T);
+    prog_flat.draw(T);    prog_flat.setViewProjMatrix(glm::mat4(1));
+
     glEnable(GL_DEPTH_TEST);
 
 }
@@ -618,6 +652,11 @@ void MyGL::keyPressEvent(QKeyEvent *e)
         keyboard[16]=true;
     } else if (e->key() == Qt::Key_R) {
         keyboard[17]=true;
+    } else if (e->key() == Qt::Key_C) {
+        if(OpenDNcycle == 0)
+            OpenDNcycle = 1;
+        else
+            OpenDNcycle = 0;
     }
 }
 void MyGL::mouseMoveEvent(QMouseEvent *event)
@@ -716,6 +755,8 @@ void MyGL::timerUpdate()
 {
     if(!game_begin)
         return;
+    //20 seconds a Day, 10 second, 1 second = 62.5timecount
+    Daytime = (++Daytime)%1250;
     timeCount = (++timeCount) % 150;
     if (timeCount % 150 == 0)
     {
@@ -750,37 +791,37 @@ void MyGL::timerUpdate()
             }
             //printf("x:%f z:%f\n", gl_camera.eye.x, gl_camera.eye.z);
             //Test whether need to update the superchunk
-            if(gl_camera.eye.x - grid.start_pos[0] > 33 * 16){
-                // +x out of bounds
-        //        std::cout<<"0\n";
-                grid.MoveUpdate(0, scene.mSceneMap);
-            }
-            else if(gl_camera.eye.x - grid.start_pos[0] < 32 * 16){
-                // -x out of bounds
-        //        std::cout<<"1\n";
-                grid.MoveUpdate(1, scene.mSceneMap);
-            }
-            else if(gl_camera.eye.y - grid.start_pos[1] > 33 * 16){
-                // +y out of bounds
-        //        std::cout<<"2\n";
-                grid.MoveUpdate(2, scene.mSceneMap);
-            }
-            else if(gl_camera.eye.y - grid.start_pos[1] < 32 * 16){
-        //        std::cout<<"3\n";
-                // -y out of bounds
-                grid.MoveUpdate(3, scene.mSceneMap);
-            }
-            else if(gl_camera.eye.z - grid.start_pos[2] > 33 * 16){
-                // +z out of bounds
-        //        std::cout<<"4\n";
-                grid.MoveUpdate(4, scene.mSceneMap);
+//            if(gl_camera.eye.x - grid.start_pos[0] > 33 * 16){
+//                // +x out of bounds
+//        //        std::cout<<"0\n";
+//                grid.MoveUpdate(0, scene.mSceneMap);
+//            }
+//            else if(gl_camera.eye.x - grid.start_pos[0] < 32 * 16){
+//                // -x out of bounds
+//        //        std::cout<<"1\n";
+//                grid.MoveUpdate(1, scene.mSceneMap);
+//            }
+//            else if(gl_camera.eye.y - grid.start_pos[1] > 33 * 16){
+//                // +y out of bounds
+//        //        std::cout<<"2\n";
+//                grid.MoveUpdate(2, scene.mSceneMap);
+//            }
+//            else if(gl_camera.eye.y - grid.start_pos[1] < 32 * 16){
+//        //        std::cout<<"3\n";
+//                // -y out of bounds
+//                grid.MoveUpdate(3, scene.mSceneMap);
+//            }
+//            else if(gl_camera.eye.z - grid.start_pos[2] > 33 * 16){
+//                // +z out of bounds
+//        //        std::cout<<"4\n";
+//                grid.MoveUpdate(4, scene.mSceneMap);
 
-            }
-            else if(gl_camera.eye.z - grid.start_pos[2] < 32 * 16){
-                // -z out of bounds
-        //        std::cout<<"5\n";
-                grid.MoveUpdate(5, scene.mSceneMap);
-            }
+//            }
+//            else if(gl_camera.eye.z - grid.start_pos[2] < 32 * 16){
+//                // -z out of bounds
+//        //        std::cout<<"5\n";
+//                grid.MoveUpdate(5, scene.mSceneMap);
+//            }
         }
     }
     prog_new.setTime(timeCount);

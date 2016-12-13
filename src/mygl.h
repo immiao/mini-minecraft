@@ -27,6 +27,7 @@ private:
     ShaderProgram prog_lambert;// A shader program that uses lambertian reflection
     ShaderProgram prog_flat;// A shader program that uses "flat" reflection (no shadowing at all)
     ShaderProgram prog_new;
+    ShaderProgram prog_shadow;
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
                 // Don't worry too much about this. Just know it is necessary in order to render geometry.
 
@@ -51,7 +52,8 @@ private:
     float g_velocity;
 
     int timeCount = 0;
-
+    int Daytime = 0;
+    int OpenDNcycle = 0;
 public:
     explicit MyGL(QWidget *parent = 0);
     ~MyGL();

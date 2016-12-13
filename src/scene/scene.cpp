@@ -8,7 +8,7 @@ double distance(double a0, double a1, double a2, int b0, int b1, int b2)
     return sqrt((a0 - b0) * (a0 - b0) + (a1 - b1) * (a1 - b1) + (a2 - b2) * (a2 - b2));
 }
 
-Scene::Scene() : mMinXYZ(-100,-128, -100), mMaxXYZ(100, 3, 100), mPerlinNoise(0.5, 1.0, 1.0, 6, 100), mRefreshDistance(5), mNumRowNewBlocks(30)
+Scene::Scene() : mMinXYZ(-50,-4, -50), mMaxXYZ(50, 3, 50), mPerlinNoise(0.5, 1.0, 1.0, 6, 100), mRefreshDistance(5), mNumRowNewBlocks(30)
 {
     mIsWorm = true;
 }

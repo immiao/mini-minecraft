@@ -7,7 +7,7 @@
 ShaderProgram::ShaderProgram(GLWidget277 *context)
     : vertShader(), fragShader(), prog(),
       attrPos(-1), attrNor(-1), attrCol(-1),
-      unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifColor(-1), unifTexture(-1), unifTime(-1),
+      unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifColor(-1), unifTexture(-1), unifTime(-1),unifLightSpaceMatrix(-1),unifBiasMatrix(-1),
       context(context)
 {}
 
@@ -71,10 +71,15 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifTexture    = context->glGetUniformLocation(prog, "u_texture");
     unifNormalMap  = context->glGetUniformLocation(prog, "u_texture_normal_map");
     unifCosinePower= context->glGetUniformLocation(prog, "u_cosine_power_map");
+    unifDepthMap   = context->glGetUniformLocation(prog, "u_depth_map");
 
     unifViewPos    = context->glGetUniformLocation(prog, "u_ViewPos");
     unifTime       = context->glGetUniformLocation(prog, "u_Time");
+    unifDaytime    = context->glGetUniformLocation(prog, "u_DayTime");
+    unifOpenDNcycle= context->glGetUniformLocation(prog, "u_OpenDNcycle");
 
+    unifLightSpaceMatrix = context->glGetUniformLocation(prog, "u_lightSpaceMatrix");
+    unifBiasMatrix = context->glGetUniformLocation(prog, "u_biasMatrix");
     unsigned char* img0 = SOIL_load_image("../miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
                                            &width0, &height0, 0, SOIL_LOAD_RGB);
     image0 = img0;
@@ -275,7 +280,7 @@ void ShaderProgram::printLinkInfoLog(int prog)
     }
 }
 
-void ShaderProgram::setTexture(){
+void ShaderProgram::setTexture(GLuint depthMapHandle){
     useMe();
     context->glGenTextures(1, &textureHandle);
     context->glActiveTexture(GL_TEXTURE0);
@@ -310,17 +315,111 @@ void ShaderProgram::setTexture(){
     context->glGenerateMipmap(GL_TEXTURE_2D);
     context->glUniform1i(unifCosinePower, 2);
 
+    //depth_map:
+    context->glActiveTexture(GL_TEXTURE3);
+    context->glBindTexture(GL_TEXTURE_2D, depthMapHandle);
+    context->glUniform1i(unifDepthMap, 3);
 }
 
-void ShaderProgram::deleteTexture(){
+void ShaderProgram::deleteTexture(GLuint depthMapHandle){
     useMe();
     context->glDeleteTextures(1, &textureHandle);
     context->glDeleteTextures(1, &normalmapHandle);
     context->glDeleteTextures(1, &cosine_powerHandle);
+    context->glDeleteTextures(1, &depthMapHandle);
 }
 
 void ShaderProgram::setTime(int timeCount){
     useMe();
     GLint v0 = timeCount;
     context->glUniform1i(unifTime, v0);
+}
+
+void ShaderProgram::setShadowTexture(){
+    useMe();
+    SHADOW_WIDTH = 1920*4;
+    SHADOW_HEIGHT = 1080*4;
+    //First we'll create a framebuffer object for rendering the depth map
+    context->glGenFramebuffers(1, &depthMapFBO);
+    context->glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+
+    //Next we create a 2D texture that we'll use as the framebuffer's depth buffer
+    context->glGenTextures(1, &depthMap);
+    context->glBindTexture(GL_TEXTURE_2D, depthMap);
+    context->glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    context->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    context->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    context->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    context->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    GLfloat borderColor[] = { 0.0, 0.0, 0.0, 0.0 };
+    context->glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    //With the generated depth texture we can attach it as the framebuffer's depth buffer
+    context->glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthMap, 0);
+
+    context->glDrawBuffer(GL_NONE);
+    context->glReadBuffer(GL_NONE);
+
+    bool flag = (context->glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE);
+    context->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+}
+
+void ShaderProgram::setShadowBias_PVmatrix(int Daytime){
+         // Send our transformation to the currently bound shader,
+         // in the "MVP" uniform
+        context->glUniformMatrix4fv(unifLightSpaceMatrix, 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+        context->glUniform1i(unifDaytime, Daytime);
+}
+
+void ShaderProgram::ComputeLightPVMatrix(int Daytime){
+    //    The MVP matrix used to render the scene from the light’s point of view is computed as follows :
+
+    //    The Projection matrix is an orthographic matrix which will encompass everything in the axis-aligned box (-10,10),(-10,10),(-10,20) on the X,Y and Z axes respectively. These values are made so that our entire *visible *scene is always visible ; more on this in the Going Further section.
+    //    The View matrix rotates the world so that in camera space, the light direction is -Z (would you like to re-read Tutorial 3 ?)
+    //    The Model matrix is whatever you want.
+        GLfloat near_plane = -10.0f, far_plane = 200.0f;
+        GLfloat width = 70.0f;
+        glm::mat4 lightProjection = glm::ortho(-width, width, -width, width, near_plane, far_plane);
+
+        if(Daytime < 625){
+            //Day to Night:
+            //set the skycolor
+            glm::vec3 sky_color(0.37,0.74,1.0);
+            //night is 0.1, 0.1, 0.4375
+            float deltax = 0.32 / 625.0, deltay = 0.69 / 625.0, deltaz = 0.7825 / 625.0;
+            sky_color.x -= deltax * float(Daytime);
+            sky_color.y -= deltay * float(Daytime);
+            sky_color.z -= deltaz * float(Daytime);
+            context->glClearColor(float(sky_color.x), float(sky_color.y), float(sky_color.z), 1.0);
+
+            //Compute the light direction(ViewMatrix):
+            int HalfDaytime = Daytime / 2;
+            glm::mat4 lightView = glm::lookAt(glm::vec3( 50.0f - 100.0f/312.0f * HalfDaytime, 50.0f,  50.0f - 100.0f/312.0f * HalfDaytime),
+                                              glm::vec3( 0.0f, 0.0f,  0.0f),
+                                              glm::vec3( 0.0f, 1.0f,  0.0f));
+            lightSpaceMatrix = lightProjection * lightView;
+        }
+        else{
+            //Night to Day
+            glm::vec3 sky_color(0.05,0.05,0.2175);
+            //night is 0.1, 0.1, 0.4375
+            float deltax = 0.32 / 625.0, deltay = 0.69 / 625.0, deltaz = 0.7825 / 625.0;
+            sky_color.x += deltax * float(Daytime-625);
+            sky_color.y += deltay * float(Daytime-625);
+            sky_color.z += deltaz * float(Daytime-625);
+            context->glClearColor(float(sky_color.x), float(sky_color.y), float(sky_color.z), 1.0);
+
+            //Compute the light direction(ViewMatrix):
+            int HalfDaytime = Daytime / 2;
+            glm::mat4 lightView = glm::lookAt(glm::vec3( -50.0f + 100.0f/312.0f * (HalfDaytime - 312), 50.0f,  -50.0f + 100.0f/312.0f * (HalfDaytime-312)),
+                                              glm::vec3( 0.0f, 0.0f,  0.0f),
+                                              glm::vec3( 0.0f, 1.0f,  0.0f));
+            lightSpaceMatrix = lightProjection * lightView;
+        }
+}
+
+void ShaderProgram::setDNcycle(int OpenDNcycle){
+    context->glUniform1i(unifOpenDNcycle ,OpenDNcycle);
 }

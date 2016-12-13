@@ -13,10 +13,13 @@
 
 uniform vec4 u_Color; // The color with which to render this instance of geometry.
 uniform int u_Time;
+uniform int u_DayTime;
+uniform int u_OpenDNcycle;
 
 uniform sampler2D u_texture; //The texture
 uniform sampler2D u_texture_normal_map;
 uniform sampler2D u_cosine_power_map;
+uniform sampler2D u_depth_map;
 
 //// These are the interpolated values out of the rasterizer, so you can't know
 //// their specific values without knowing the vertices that contributed to them
@@ -24,16 +27,47 @@ in vec4 fs_LightVec1;
 
 in vec3 FragPos;
 in vec2 fs_UV;
-in vec3 TangentLightPos;
 in vec3 TangentViewPos;
 in vec3 TangentFragPos;
+in vec4 FragPosLightSpace;
+in vec4 fs_Nor;
+
 flat in int IsFluid;
 
 out vec4 out_Col; // This is the final output color that you will see on your
                   // screen for the pixel that is currently being processed.
 
+float ShadowCalculation(vec4 fragPosLightSpace, float dot_n_l)
+{
+    // perform perspective divide
+        vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+        // Transform to [0,1] range
+        projCoords = projCoords * 0.5 + 0.5;
+        // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+        float closestDepth = texture(u_depth_map, projCoords.xy).r;
+//      add a bias margin
+        float bias = 0.001;
+        // Get depth of current fragment from light's perspective
+        float currentDepth = projCoords.z;
+        // Check whether current frag pos is in shadow
+        float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+
+        vec2 texelSize = 1.0 / textureSize(u_depth_map, 0);
+        for(int x = -1; x <= 1; ++x)
+        {
+            for(int y = -1; y <= 1; ++y)
+            {
+                float pcfDepth = texture(u_depth_map, projCoords.xy + vec2(x, y) * texelSize).r;
+                shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+            }
+        }
+        shadow /= 9.0;
+        return shadow;
+}
+
 void main()
 {
+
         vec2 new_UV;
         if(IsFluid == 1){
             //WATER or LAVA
@@ -67,7 +101,7 @@ void main()
         vec3 color2 = texture(u_cosine_power_map, new_UV).rgb;
         float cosine_power = color2.x * 256.0f;
         // Ambient
-        vec3 ambient = 0.2 * color;
+        vec3 ambient = 0.18 * color;
         // Diffuse
         vec3 lightDir = normalize(vec3(fs_LightVec1));
         float diff = max(dot(lightDir, normal), 0.0);
@@ -79,5 +113,20 @@ void main()
         float spec = max(pow(dot(normal, halfwayDir), cosine_power * cosine_power), 0.0);
         vec3 specular = vec3(0.3) * spec;
 
-        out_Col = vec4(ambient + diffuse + specular, 1.0f);
+        // Calculate shadow
+        float shadow = ShadowCalculation(FragPosLightSpace, dot(normal, lightDir));
+
+        float Lightintense;
+        if(u_DayTime < 625 && u_OpenDNcycle == 1){
+            //Day to Night
+            Lightintense = 1.0f - 0.4f / 625.0f * u_DayTime;
+        }
+        else if(u_DayTime >= 625 && u_OpenDNcycle == 1){
+            //Night to Day
+            Lightintense = 0.6f + 0.4f / 625.0f * (u_DayTime - 625);
+        }
+        else{
+            Lightintense = 1;
+        }
+        out_Col = Lightintense * vec4(ambient + (1.0- 0.7 * shadow) * diffuse + (1.0- 0.7 * shadow) * specular, 1.0f);
 }

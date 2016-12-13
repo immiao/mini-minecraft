@@ -660,7 +660,7 @@ void chunk::render(ShaderProgram prog){
         return;
 
     prog.useMe();
-    context->glEnable(GL_CULL_FACE);
+//    context->glEnable(GL_CULL_FACE);
     context->glEnable(GL_DEPTH_TEST);
 
     context->glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -706,7 +706,7 @@ void chunk::render(ShaderProgram prog){
     if (attribute_bitangent != -1) context->glDisableVertexAttribArray(attribute_bitangent);
     if (attribute_fluid != -1) context->glDisableVertexAttribArray(attribute_fluid);
 
-    context->glDisable(GL_CULL_FACE);
+//    context->glDisable(GL_CULL_FACE);
     context->glDisable(GL_DEPTH_TEST);
 }
 
@@ -761,7 +761,7 @@ void superchunk::set(int x, int y, int z, int type){
     cl[cx][cy][cz]->set(x, y, z, type);
 }
 
-void superchunk::render(ShaderProgram prog, glm::mat4 VP){
+void superchunk::render(ShaderProgram prog, glm::mat4 VP, bool RenderScreen){
     //printf("%d %d %d\n", SCX, SCY, SCZ);
     for(int x = 0; x < SCX; x++)
         for(int y = 0; y < SCY; y++)
@@ -775,48 +775,21 @@ void superchunk::render(ShaderProgram prog, glm::mat4 VP){
                     glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(x * CX, y * CY, z * CZ) + start_pos);
                     prog.setModelMatrix(model);
 
-                    //If the chunk is out of the screen, then we don't render it
-                    glm::vec3 center = glm::vec3(8,8,8);
-                    glm::vec4 coords = VP * model * glm::vec4(center, 1);
-                    coords.x /= coords.w;
-                    coords.y /= coords.w;
-                    float diameter = sqrtf(CX * CX + CY * CY + CZ * CZ);
-                    if(coords.z < -diameter){
-                        continue;
+                    if(RenderScreen){
+                        //If the chunk is out of the screen, then we don't render it
+                        glm::vec3 center = glm::vec3(8,8,8);
+                        glm::vec4 coords = VP * model * glm::vec4(center, 1);
+                        coords.x /= coords.w;
+                        coords.y /= coords.w;
+                        float diameter = sqrtf(CX * CX + CY * CY + CZ * CZ);
+                        if(coords.z < -diameter){
+                            continue;
+                        }
+                        diameter /= fabsf(coords.w);
+                        if(fabsf(coords.x) > 1 + diameter || fabsf(coords.y) > 1 + diameter){
+                            continue;
+                        }
                     }
-                    diameter /= fabsf(coords.w);
-                    if(fabsf(coords.x) > 1 + diameter || fabsf(coords.y) > 1 + diameter){
-                        continue;
-                    }
-
-                    //Reset the type(mainly for stone and grass or dirt)
-//                    glm::vec3 pos_origin = glm::vec3(x * CX, y * CY, z * CZ) + start_pos;
-//                    for(int m = 0; m < CX; m++)
-//                        for(int n = 0; n < CY; n++)
-//                            for(int k = 0; k < CZ; k++){
-//                                int block_type = cl[x][y][z]->block[m][n][k];
-
-//                                if(block_type == 0){
-//                                    continue;
-//                                }
-//                                //if(block_type is regular type(supposed <= 3))
-//                                //DIRT is 1, GRASS is 2, STONE is 3
-//                                if(block_type <= 3){
-//                                    //if y < -16, then STONE
-//                                    if((pos_origin.y + n) < -16 && block_type != 3){
-//                                        cl[x][y][z]->set(m,n,k,3);
-//                                    }
-//                                    //else if there is a block above, DIRT
-//                                    else if(get(pos_origin.x + m, pos_origin.y + n + 1, pos_origin.z + k) && block_type != 1){
-//                                        cl[x][y][z]->set(m,n,k,1);
-//                                    }
-//                                    //else GRASS
-//                                    else if(!get(pos_origin.x + m, pos_origin.y + n + 1, pos_origin.z + k) && block_type != 2){
-//                                        cl[x][y][z]->set(m,n,k,2);
-//                                    }
-//                                }
-//                            }
-
                     cl[x][y][z]->render(prog);
                 }
             }

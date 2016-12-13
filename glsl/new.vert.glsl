@@ -21,6 +21,11 @@ uniform mat4 u_ViewProj;    // The matrix that defines the camera's transformati
                             // but in HW3 you'll have to generate one yourself
 uniform vec3 u_ViewPos;
 
+uniform mat4 u_lightSpaceMatrix;
+uniform mat4 u_biasMatrix;
+uniform int u_DayTime;
+uniform int u_OpenDNcycle;
+
 //Using chunks to render
 in vec4 vs_coord; //vertices coordinates
 in vec4 vs_nor;   //vertices surface normal
@@ -33,21 +38,27 @@ out vec4 fs_LightVec1;       // The direction in which our virtual light lies, r
 
 out vec3 FragPos;
 out vec2 fs_UV;
-out vec3 TangentLightPos;
 out vec3 TangentViewPos;
 out vec3 TangentFragPos;
+out vec4 FragPosLightSpace;
+out vec4 fs_Nor;
+
 flat out int IsFluid;
 
-const vec4 lightDir = vec4(6,5,4,0);  // The direction of our virtual light, which is used to compute the shading of
+vec4 lightDir = vec4(50,50,50
+                           ,0);  // The direction of our virtual light, which is used to compute the shading of
                                         // the geometry in the fragment shader.
 
-const vec3 lightPos = vec3(3,7,5);
 
 void main()
 {
+    mat4 depthBiasMVP = u_biasMatrix * u_lightSpaceMatrix * u_Model;
     gl_Position = u_ViewProj * u_Model * vs_coord;
+
+
     FragPos = vec3(u_Model * vs_coord);
     fs_UV = vs_UV;
+    fs_Nor = vs_nor;
     IsFluid = vs_IsFluid;
 
     mat3 normalMatrix = transpose(mat3(u_ModelInvTr));
@@ -55,9 +66,19 @@ void main()
     vec3 B = normalize(normalMatrix * vs_bitangent);
     vec3 N = normalize(normalMatrix * vec3(vs_nor));
     mat3 TBN = transpose(mat3(T, B, N));
-    TangentLightPos = TBN * lightPos;
     TangentViewPos  = TBN * u_ViewPos;
     TangentFragPos  = TBN * FragPos;
 
-    fs_LightVec1 = lightDir;
+    FragPosLightSpace = u_lightSpaceMatrix * u_Model * vec4(vec3(vs_coord), 1.0f);
+
+    if((u_DayTime < 625 && u_OpenDNcycle == 1)){
+        //Day to Night
+        fs_LightVec1 = vec4(50.0f - 100.0f / 625.0f * u_DayTime, 50.0f, 50.0f - 100.0f / 625.0f * u_DayTime, 1.0f);
+    }
+    else if(u_DayTime >= 625 && u_OpenDNcycle == 1){
+        //Night to Day
+        fs_LightVec1 = vec4(-50.0f + 100.0f / 625.0f * (u_DayTime - 625), 50.0f, -50.0f + 100.0f / 625.0f * (u_DayTime - 625), 1.0f);
+    }
+    else
+        fs_LightVec1 = lightDir;
 }

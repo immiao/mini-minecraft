@@ -48,7 +48,7 @@ struct superchunk{
 
     int get(int x, int y, int z);
     void set(int x, int y, int z, int type);
-    void render(ShaderProgram prog, glm::mat4 VP);
+    void render(ShaderProgram prog, glm::mat4 VP, bool RenderScreen);
     void MoveUpdate(int m, std::map<tuple, Block *> map);
 };
 

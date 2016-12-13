@@ -6,5 +6,7 @@
         <file>glsl/flat.vert.glsl</file>
         <file>glsl/new.frag.glsl</file>
         <file>glsl/new.vert.glsl</file>
+        <file>glsl/shadow.frag.glsl</file>
+        <file>glsl/shadow.vert.glsl</file>
     </qresource>
 </RCC>

@@ -27,17 +27,29 @@ public:
     int unifTexture;
     int unifNormalMap;
     int unifCosinePower;
+    int unifDepthMap;
 
     int unifViewPos;
     int unifTime;
+    int unifDaytime;
+    int unifOpenDNcycle;
+//  shadow mapping
+    int unifLightSpaceMatrix;
+    int unifBiasMatrix;
 
     GLuint textureHandle;
     GLuint normalmapHandle;
     GLuint cosine_powerHandle;
 
+    //Shadow mapping
+    GLuint depthMapFBO;
+    GLuint SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
+    GLuint depthMap;
+
     //texture = 0, normal_map = 1;
     int width0, height0, width1, height1, width2, height2;
     unsigned char *image0, *image1, *image2;
+    glm::mat4 lightSpaceMatrix;
 public:
     ShaderProgram(GLWidget277* context);
     // Sets up the requisite GL data and shaders from the given .glsl files
@@ -61,13 +73,19 @@ public:
     // Utility function that prints any shader linking errors to the console
     void printLinkInfoLog(int prog);
 
-    void setTexture();
-    void deleteTexture();
+    void setTexture(GLuint depthMapHandle);
+    void deleteTexture(GLuint depthMapHandle);
 
     void setTime(int timeCount);
+
+    //Shadow mapping
+    void setShadowTexture();
+    void setShadowBias_PVmatrix(int Daytime);
+    void ComputeLightPVMatrix(int Daytime);
+    void setDNcycle(int OpenDNcycle);
     QString qTextFileRead(const char*);
 
-private:
+public:
     GLWidget277* context;   // Since Qt's OpenGL support is done through classes like QOpenGLFunctions_3_2_Core,
                             // we need to pass our OpenGL context to the Drawable in order to call GL functions
                             // from within this class.
