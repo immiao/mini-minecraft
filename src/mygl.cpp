@@ -77,6 +77,8 @@ void MyGL::initializeGL()
 
     prog_skybox.create(":/glsl/skybox.vert.glsl", ":/glsl/skybox.frag.glsl");
 
+    prog_particle.create(":/glsl/particle.vert.glsl", ":/glsl/particle.geom.glsl", ":/glsl/particle.frag.glsl");
+
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
     // This makes your geometry render green.
