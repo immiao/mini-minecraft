@@ -5,8 +5,6 @@ layout(triangle_strip, max_vertices=4) out;
 uniform mat4 u_ViewProj;
 uniform vec3 u_cameraPos;
 
-out vec4 oPos;
-
 void main()
 {
     vec3 f = normalize(u_cameraPos - gl_in[0].gl_Position.xyz);
@@ -22,8 +20,6 @@ void main()
     EmitVertex();
     gl_Position = u_ViewProj * vec4(gl_in[0].gl_Position.xyz + top - right, 1.0);
     EmitVertex();
-
-    //oPos = gl_in[0].gl_Position + vec4(0, -1, 0, 0);
 
     EndPrimitive();
 }

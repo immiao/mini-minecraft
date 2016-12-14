@@ -1,4 +1,5 @@
 #include "particle.h"
+#include "glm/glm.hpp"
 
 Particle::Particle(GLWidget277* context)
 {
@@ -8,19 +9,21 @@ Particle::Particle(GLWidget277* context)
 
 void Particle::create()
 {
-    count = 1;
+    count = 100;
 
-    const float pos[] =
+    glm::vec4 pos[100];
+
+    for (int i = 0; i < 100; i++)
     {
-        10.f, 50.f, 10.f, 1.f
-    };
+        float height = rand() % 200 / 10.f + 60;
+        float x = rand() % 200 - 150;
+        float z = rand() % 200 - 150;
+        pos[i] = glm::vec4(x, height, z, 1.0f);
+        printf("%f %f %f\n",x ,height, z);
+    }
 
-    context->glGenBuffers(1, &bufPos[0]);
+    context->glGenBuffers(1, &bufPos);
     //printf("%d\n", bufPosA);
-    context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufPos[0]);
-    context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(float) * 4, pos, GL_STATIC_DRAW);
-
-//    context->glGenBuffers(1, &bufPos[1]);
-//    context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufPos[1]);
-//    context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(float) * 4, 0, GL_STATIC_DRAW);
+    context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufPos);
+    context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(glm::vec4), pos, GL_STATIC_DRAW);
 }

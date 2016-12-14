@@ -280,17 +280,19 @@ void ShaderProgram::drawParticle(Particle &d)
 
     if (attrPos != -1)
     {
-        //context->glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, d.bufPos[1]);
 
-        context->glBindBuffer(GL_ARRAY_BUFFER, d.bufPos[0]);
+
+        context->glBindBuffer(GL_ARRAY_BUFFER, d.bufPos);
 
         context->glEnableVertexAttribArray(attrPos);
         context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 0, NULL);
     }
 
    // context->glPointSize(10);
-    //context->glBeginTransformFeedback(GL_POINTS);
-    context->glDrawElements(GL_POINTS, d.count, GL_UNSIGNED_INT, 0);
+    //context->glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, d.bufPos[1]);
+    //context->glBeginTransformFeedback(GL_TRIANGLE_STRIP);
+    context->glDrawArrays(GL_POINTS, 0, d.count);
+    //printf("%d\n", d.count);
     //context->glEndTransformFeedback();
 
     if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
