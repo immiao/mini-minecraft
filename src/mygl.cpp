@@ -15,11 +15,11 @@
 const int MaxReachDistance=8;
 MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
-      gl_camera(), geom_cube(this),Rivers(&scene),center(this),T(this),
-      prog_lambert(this), prog_flat(this), prog_new(this), prog_shadow(this),
+      gl_camera(), gl_skyboxCamera(), geom_cube(this),Rivers(&scene),center(this),T(this),
+      prog_lambert(this), prog_flat(this), prog_new(this), prog_shadow(this),prog_skybox(this),
       grid(this),mousemove(false),game_begin(false),jump_state(false),
       g_velocity(0),external_force_acceleration(-gravity_acceleration),
-      character_size(0,0,0)
+      character_size(0,0,0), skybox(this)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -74,6 +74,9 @@ void MyGL::initializeGL()
     prog_new.create(":/glsl/new.vert.glsl", ":/glsl/new.frag.glsl");
 
     prog_shadow.create(":/glsl/shadow.vert.glsl", ":/glsl/shadow.frag.glsl");
+
+    prog_skybox.create(":/glsl/skybox.vert.glsl", ":/glsl/skybox.frag.glsl");
+
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
     // This makes your geometry render green.
@@ -100,6 +103,7 @@ void MyGL::initializeGL()
     T.create();
     initializeGrid();
 
+    skybox.create();
     game_begin = true;
 }
 
@@ -112,10 +116,14 @@ void MyGL::resizeGL(int w, int h)
                        glm::vec3(1, 20, 1), glm::vec3(0,1,0));
     glm::mat4 viewproj = gl_camera.getViewProj();
 
+    gl_skyboxCamera = Camera(w, h, glm::vec3(0, 0, 0), glm::vec3(1, 0, 1), glm::vec3(0, 1, 0));
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
 
     prog_lambert.setViewProjMatrix(viewproj);
     prog_flat.setViewProjMatrix(viewproj);
+
+    prog_skybox.setViewProjMatrix(gl_skyboxCamera.getViewProj());
+
     printGLErrorLog();
 }
 
@@ -144,6 +152,13 @@ void MyGL::paintGL()
     glViewport(0, 0, this->width(), this->height());
     prog_new.context->glBindFramebuffer(GL_FRAMEBUFFER, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glDisable(GL_DEPTH_TEST);
+    prog_skybox.setViewProjMatrix(gl_skyboxCamera.getViewProj());
+    prog_skybox.setSkyboxTexture();
+    prog_skybox.draw(skybox);
+    glEnable(GL_DEPTH_TEST);
+
     prog_new.setViewProjMatrix(gl_camera.getViewProj());
     prog_new.setViewPos(gl_camera.eye);
     prog_new.setTexture(prog_shadow.depthMap);
@@ -165,15 +180,9 @@ void MyGL::paintGL()
     prog_new.deleteTexture(prog_shadow.depthMap);
     prog_shadow.context->glDeleteFramebuffers(1, &prog_shadow.depthMapFBO);
 
-//    GLDrawScene();
-
     prog_flat.setModelMatrix(glm::mat4(1));
 
-    glDisable(GL_DEPTH_TEST);
-    prog_flat.draw(center);
-    prog_flat.draw(T);    prog_flat.setViewProjMatrix(glm::mat4(1));
 
-    glEnable(GL_DEPTH_TEST);
 
 }
 
@@ -683,6 +692,9 @@ void MyGL::mouseMoveEvent(QMouseEvent *event)
     gl_camera.RotateAboutUp(-theta);
     gl_camera.RotateAboutRight(-fai);
     gl_camera.RecomputeAttributes();
+
+    gl_skyboxCamera.RotateAboutUp(-theta);
+    gl_skyboxCamera.RotateAboutRight(-fai);
     //update();
 
     //printf("%f %f %d %f\n", gl_camera.ref.x, gl_camera.ref.z, scene.mMinXYZ.z, fabs(gl_camera.ref.z - scene.mMinXYZ.z));

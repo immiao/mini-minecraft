@@ -21,7 +21,8 @@ SOURCES += \
     $$PWD/scene/screen_center.cpp \
     $$PWD/scene/screen_triangles.cpp \
     $$PWD/scene/riversystem.cpp \
-    $$PWD/direction.cpp
+    $$PWD/direction.cpp \
+    $$PWD/scene/skybox.cpp
 HEADERS += \
     $$PWD/la.h \
     $$PWD/mainwindow.h \
@@ -40,4 +41,5 @@ HEADERS += \
     $$PWD/scene/screen_center.h \
     $$PWD/scene/screen_triangles.h \
     $$PWD/scene/riversystem.h \
-    $$PWD/direction.h
+    $$PWD/direction.h \
+    $$PWD/scene/skybox.h

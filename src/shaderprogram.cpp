@@ -89,6 +89,9 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unsigned char* img2 = SOIL_load_image("../miniminecraft/minecraft_textures_all/minecraft_cosine_power_all.png",
                                            &width2, &height2, 0, SOIL_LOAD_RGB);
     image2 = img2;
+
+    // skybox
+    initSkyBox();
 }
 
 void ShaderProgram::useMe()
@@ -422,4 +425,59 @@ void ShaderProgram::ComputeLightPVMatrix(int Daytime){
 
 void ShaderProgram::setDNcycle(int OpenDNcycle){
     context->glUniform1i(unifOpenDNcycle ,OpenDNcycle);
+}
+
+void ShaderProgram::initSkyBox()
+{
+    unifSkyboxTexture = context->glGetUniformLocation(prog, "gCubemapTexture");
+
+    if (unifSkyboxTexture == -1)
+        return;
+
+    up = SOIL_load_image("../miniminecraft/minecraft_textures_all/up6.JPG",
+                                               &w0, &h0, 0, SOIL_LOAD_RGB);
+    down = SOIL_load_image("../miniminecraft/minecraft_textures_all/down6.JPG",
+                                               &w1, &h1, 0, SOIL_LOAD_RGB);
+    front = SOIL_load_image("../miniminecraft/minecraft_textures_all/front6.JPG",
+                                               &w2, &h2, 0, SOIL_LOAD_RGB);
+    back = SOIL_load_image("../miniminecraft/minecraft_textures_all/back6.JPG",
+                                               &w3, &h3, 0, SOIL_LOAD_RGB);
+    left = SOIL_load_image("../miniminecraft/minecraft_textures_all/left6.JPG",
+                                               &w4, &h4, 0, SOIL_LOAD_RGB);
+    right = SOIL_load_image("../miniminecraft/minecraft_textures_all/right6.JPG",
+                                               &w5, &h5, 0, SOIL_LOAD_RGB);
+
+//    GLenum types[6] = { GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+//                        GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+//                        GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+//                        GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+//                        GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+//                        GL_TEXTURE_CUBE_MAP_NEGATIVE_X
+//                      };
+
+    context->glGenTextures(1, &m_skyboxTexture);
+    context->glBindTexture(GL_TEXTURE_CUBE_MAP, m_skyboxTexture);
+
+    context->glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, w0, h0, 0, GL_RGB, GL_UNSIGNED_BYTE, up);
+    context->glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, w1, h1, 0, GL_RGB, GL_UNSIGNED_BYTE, down);
+    context->glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, w2, h2, 0, GL_RGB, GL_UNSIGNED_BYTE, front);
+    context->glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, w3, h3, 0, GL_RGB, GL_UNSIGNED_BYTE, back);
+    context->glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, w4, h4, 0, GL_RGB, GL_UNSIGNED_BYTE, left);
+    context->glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, w5, h5, 0, GL_RGB, GL_UNSIGNED_BYTE, right);
+
+    context->glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    context->glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    context->glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    context->glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    context->glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    //context->glGenerateMipmap(GL_TEXTURE_2D);
+    //context->glUniform1i(unifTexture, 0);
+}
+
+void ShaderProgram::setSkyboxTexture()
+{
+    context->glActiveTexture(GL_TEXTURE0);
+    context->glBindTexture(GL_TEXTURE_CUBE_MAP, m_skyboxTexture);
+    context->glUniform1i(unifSkyboxTexture, 0);
 }

@@ -14,6 +14,7 @@
 #include <chunk.h>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
+#include <scene/skybox.h>
 
 #define BODYEDGE_ERROR 0.05f
 #define BLOCKEDGE_ERROR 0.02f
@@ -28,6 +29,8 @@ private:
     ShaderProgram prog_flat;// A shader program that uses "flat" reflection (no shadowing at all)
     ShaderProgram prog_new;
     ShaderProgram prog_shadow;
+
+    ShaderProgram prog_skybox;
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
                 // Don't worry too much about this. Just know it is necessary in order to render geometry.
 
@@ -37,6 +40,11 @@ private:
     superchunk grid;
     Screen_Center center;
     Screen_Triangles T;
+
+    // skybox
+    Skybox skybox;
+    Camera gl_skyboxCamera;
+
     QPoint mouse_oldpos;
     /// Timer linked to timerUpdate(). Fires approx. 60 times per second
     QTimer timer;

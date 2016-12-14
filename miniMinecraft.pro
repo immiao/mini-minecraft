@@ -49,3 +49,5 @@ SOILPATH = "../miniminecraft/Simple OpenGL Image Library/"
 INCLUDEPATH += "$${SOILPATH}/src"
 win32:LIBS += -L"$${SOILPATH}/lib" -lSOIL
 win32:LIBS += -lopengl32
+
+DISTFILES +=

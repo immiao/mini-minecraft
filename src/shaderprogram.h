@@ -50,6 +50,14 @@ public:
     int width0, height0, width1, height1, width2, height2;
     unsigned char *image0, *image1, *image2;
     glm::mat4 lightSpaceMatrix;
+
+    // skybox
+    unsigned char *up, *down, *front, *back, *left, *right;
+    int w0,w1,w2,w3,w4,w5;
+    int h0,h1,h2,h3,h4,h5;
+    GLuint m_skyboxTexture;
+    int unifSkyboxTexture;
+
 public:
     ShaderProgram(GLWidget277* context);
     // Sets up the requisite GL data and shaders from the given .glsl files
@@ -84,6 +92,9 @@ public:
     void ComputeLightPVMatrix(int Daytime);
     void setDNcycle(int OpenDNcycle);
     QString qTextFileRead(const char*);
+
+    void initSkyBox();
+    void setSkyboxTexture();
 
 public:
     GLWidget277* context;   // Since Qt's OpenGL support is done through classes like QOpenGLFunctions_3_2_Core,
