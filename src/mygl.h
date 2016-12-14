@@ -31,6 +31,8 @@ private:
     ShaderProgram prog_shadow;
 
     ShaderProgram prog_skybox;
+    ShaderProgram prog_particle;
+
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
                 // Don't worry too much about this. Just know it is necessary in order to render geometry.
 

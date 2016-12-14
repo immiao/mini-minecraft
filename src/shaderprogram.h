@@ -13,6 +13,7 @@ class ShaderProgram
 public:
     GLuint vertShader; // A handle for the vertex shader stored in this shader program
     GLuint fragShader; // A handle for the fragment shader stored in this shader program
+    GLuint geomShader;
     GLuint prog;       // A handle for the linked shader program stored in this class
 
     int attrPos; // A handle for the "in" vec4 representing vertex position in the vertex shader
@@ -63,6 +64,8 @@ public:
     ShaderProgram(GLWidget277* context);
     // Sets up the requisite GL data and shaders from the given .glsl files
     void create(const char *vertfile, const char *fragfile);
+    void create(const char *vertfile, const char *geomfile, const char* fragfile);
+
     // Tells our OpenGL context to use this shader to draw things
     void useMe();
     // Pass the given model matrix to this shader on the GPU

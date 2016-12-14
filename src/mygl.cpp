@@ -16,7 +16,7 @@ const int MaxReachDistance=8;
 MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
       gl_camera(), gl_skyboxCamera(), geom_cube(this),Rivers(&scene),center(this),T(this),
-      prog_lambert(this), prog_flat(this), prog_new(this), prog_shadow(this),prog_skybox(this),
+      prog_lambert(this), prog_flat(this), prog_new(this), prog_shadow(this),prog_skybox(this), prog_particle(this),
       grid(this),mousemove(false),game_begin(false),jump_state(false),
       g_velocity(0),external_force_acceleration(-gravity_acceleration),
       character_size(0,0,0), skybox(this)

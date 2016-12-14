@@ -10,5 +10,8 @@
         <file>glsl/shadow.vert.glsl</file>
         <file>glsl/skybox.frag.glsl</file>
         <file>glsl/skybox.vert.glsl</file>
+        <file>glsl/particle.frag.glsl</file>
+        <file>glsl/particle.vert.glsl</file>
+        <file>glsl/particle.geom.glsl</file>
     </qresource>
 </RCC>
