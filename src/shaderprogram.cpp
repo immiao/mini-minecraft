@@ -6,9 +6,9 @@
 
 ShaderProgram::ShaderProgram(GLWidget277 *context)
     : vertShader(), fragShader(), prog(),
-      attrPos(-1), attrNor(-1), attrCol(-1),
+      attrPos(-1), attrNor(-1), attrCol(-1),attrUv(-1),
       unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifColor(-1), unifTexture(-1), unifTime(-1),unifLightSpaceMatrix(-1),unifBiasMatrix(-1),
-      context(context)
+      unifTextureFlag(-1),unifFlatTexture(-1),context(context)
 {}
 
 void ShaderProgram::create(const char *vertfile, const char *fragfile)
@@ -62,11 +62,15 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     attrPos = context->glGetAttribLocation(prog, "vs_Pos");
     attrNor = context->glGetAttribLocation(prog, "vs_Nor");
     attrCol = context->glGetAttribLocation(prog, "vs_Col");
+    attrUv= context->glGetAttribLocation(prog, "vs_Uv");
 
     unifModel      = context->glGetUniformLocation(prog, "u_Model");
     unifModelInvTr = context->glGetUniformLocation(prog, "u_ModelInvTr");
     unifViewProj   = context->glGetUniformLocation(prog, "u_ViewProj");
     unifColor      = context->glGetUniformLocation(prog, "u_Color");
+
+    unifTextureFlag=context->glGetUniformLocation(prog, "u_textureflag");
+    unifFlatTexture= context->glGetUniformLocation(prog, "u_FlatTexture");
 
     unifTexture    = context->glGetUniformLocation(prog, "u_texture");
     unifNormalMap  = context->glGetUniformLocation(prog, "u_texture_normal_map");
@@ -90,6 +94,9 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
                                            &width2, &height2, 0, SOIL_LOAD_RGB);
     image2 = img2;
 
+    unsigned char* img3 = SOIL_load_image("../miniminecraft/minecraft_textures_all/character.png",
+                                               &width3, &height3, 0, SOIL_LOAD_RGB);
+    image3=img3;
     // skybox
     initSkyBox();
 }
@@ -156,6 +163,16 @@ void ShaderProgram::setGeometryColor(glm::vec4 color)
         context->glUniform4fv(unifColor, 1, &color[0]);
     }
 }
+void ShaderProgram::setTextureFlag(float Flag)
+{
+    useMe();
+
+    if(unifTextureFlag != -1) {
+    // Pass a 4x4 matrix into a uniform variable in our shader
+                    // Handle to the matrix variable on the GPU
+    context->glUniform1f(unifTextureFlag,Flag);
+    }
+}
 
 void ShaderProgram::setViewPos(glm::vec3 pos){
     useMe();
@@ -193,7 +210,10 @@ void ShaderProgram::draw(Drawable &d)
         context->glEnableVertexAttribArray(attrCol);
         context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 0, NULL);
     }
-
+    if(attrUv!=-1&&d.bindUv()){
+        context->glEnableVertexAttribArray(attrUv);
+        context->glVertexAttribPointer(attrUv, 2, GL_FLOAT, false, 0, NULL);
+    }
     // Bind the index buffer and then draw shapes from it.
     // This invokes the shader program, which accesses the vertex buffers.
     d.bindIdx();
@@ -203,6 +223,7 @@ void ShaderProgram::draw(Drawable &d)
     if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
     if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
     if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
+    if (attrUv != -1) context->glDisableVertexAttribArray(attrUv);
 
     context->printGLErrorLog();
 }
@@ -322,6 +343,45 @@ void ShaderProgram::setTexture(GLuint depthMapHandle){
     context->glActiveTexture(GL_TEXTURE3);
     context->glBindTexture(GL_TEXTURE_2D, depthMapHandle);
     context->glUniform1i(unifDepthMap, 3);
+}
+
+void ShaderProgram::setFlatTexture(int mode)
+{
+    useMe();
+    if(unifFlatTexture!=-1)
+    {
+        if(mode==1)
+        {
+            context->glGenTextures(1, &textureHandle);
+            context->glActiveTexture(GL_TEXTURE0);
+            context->glBindTexture(GL_TEXTURE_2D, textureHandle);
+
+        //    int width, height;
+            //We're missing dynamic library right now.
+        //    unsigned char* image = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
+        //                                           &width, &height, 0, SOIL_LOAD_RGB);
+        //    printf("SOIL results: '%s'\n", SOIL_last_result());
+            context->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width0, height0, 0, GL_RGB, GL_UNSIGNED_BYTE, image0);
+            context->glGenerateMipmap(GL_TEXTURE_2D);
+            context->glUniform1i(unifFlatTexture, 0);
+        }
+        else if(mode==2)
+        {
+            context->glGenTextures(1, &textureHandle);
+            context->glActiveTexture(GL_TEXTURE0);
+            context->glBindTexture(GL_TEXTURE_2D, textureHandle);
+
+        //    int width, height;
+            //We're missing dynamic library right now.
+        //    unsigned char* image = SOIL_load_image("F:/QT_project/Final_Project_Minicraft/miniminecraft/minecraft_textures_all/minecraft_textures_all.png",
+        //                                           &width, &height, 0, SOIL_LOAD_RGB);
+        //    printf("SOIL results: '%s'\n", SOIL_last_result());
+            context->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width3, height3, 0, GL_RGB, GL_UNSIGNED_BYTE, image3);
+            context->glGenerateMipmap(GL_TEXTURE_2D);
+            context->glUniform1i(unifFlatTexture, 0);
+        }
+
+    }
 }
 
 void ShaderProgram::deleteTexture(GLuint depthMapHandle){

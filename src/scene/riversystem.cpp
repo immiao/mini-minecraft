@@ -178,7 +178,7 @@ void RiverSystem::ToWater(glm::vec3 pos)
         std::get<1>(tupletemp)++;
         iter=scene->mSceneMap.find(tupletemp);
     }
-
+    waterblocks.push_back(pos);
 }
 
 
@@ -566,5 +566,9 @@ void RiverSystem::CarveBankTerminal(std::vector<glm::vec3> terminal,int riverdir
             terminal[i][2]++;
         CarveBankOrigin(terminal,FORWARD);
     }
+}
+std::vector<glm::vec3> RiverSystem::GetRiverBlocks()
+{
+    return waterblocks;
 }
 

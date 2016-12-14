@@ -13,10 +13,14 @@ public:
     virtual void create();
     virtual GLenum drawMode();
     void InitializeScreenSize(int w,int h);
+    void BuildBuffer();
 
 private:
     int width;
     int height;
+    std::vector<glm::vec4> vert_pos;
+    std::vector<glm::vec4> vert_color;
+    std::vector<GLuint> vert_index;
 
 };
 

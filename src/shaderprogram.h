@@ -18,11 +18,15 @@ public:
     int attrPos; // A handle for the "in" vec4 representing vertex position in the vertex shader
     int attrNor; // A handle for the "in" vec4 representing vertex normal in the vertex shader
     int attrCol; // A handle for the "in" vec4 representing vertex color in the vertex shader
+    int attrUv;
 
     int unifModel; // A handle for the "uniform" mat4 representing model matrix in the vertex shader
     int unifModelInvTr; // A handle for the "uniform" mat4 representing inverse transpose of the model matrix in the vertex shader
     int unifViewProj; // A handle for the "uniform" mat4 representing combined projection and view matrices in the vertex shader
     int unifColor; // A handle for the "uniform" vec4 representing color of geometry in the vertex shader
+
+    int unifTextureFlag;
+    int unifFlatTexture;
 
     int unifTexture;
     int unifNormalMap;
@@ -37,6 +41,7 @@ public:
     int unifLightSpaceMatrix;
     int unifBiasMatrix;
 
+
     GLuint textureHandle;
     GLuint normalmapHandle;
     GLuint cosine_powerHandle;
@@ -47,8 +52,8 @@ public:
     GLuint depthMap;
 
     //texture = 0, normal_map = 1;
-    int width0, height0, width1, height1, width2, height2;
-    unsigned char *image0, *image1, *image2;
+    int width0, height0, width1, height1, width2, height2,width3, height3;
+    unsigned char *image0, *image1, *image2,*image3;
     glm::mat4 lightSpaceMatrix;
 
     // skybox
@@ -81,6 +86,9 @@ public:
     void printShaderInfoLog(int shader);
     // Utility function that prints any shader linking errors to the console
     void printLinkInfoLog(int prog);
+
+    void setTextureFlag(float Flag);
+    void setFlatTexture(int mode);
 
     void setTexture(GLuint depthMapHandle);
     void deleteTexture(GLuint depthMapHandle);

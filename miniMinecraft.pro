@@ -1,5 +1,5 @@
 QT += core widgets
-
+QT += multimedia
 TARGET = 277
 TEMPLATE = app
 CONFIG += console

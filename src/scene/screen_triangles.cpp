@@ -7,7 +7,7 @@ static const int vertex_num = 12;
 
 void createVertex(std::vector<glm::vec4> &pos,int width,int height)
 {
-    pos.resize(12);
+    pos.resize(vertex_num);
 
     pos[0][0]=2*(0.5*width+7)/width-1;
     pos[0][1]=0;
@@ -60,14 +60,17 @@ void Screen_Triangles::InitializeScreenSize(int w,int h)
 
 void Screen_Triangles::create()
 {
-    std::vector<glm::vec4> vert_pos;
-    std::vector<glm::vec4> vert_color;
-    std::vector<GLuint> vert_index;
 
     createVertex(vert_pos,width,height);
     createVertexColor(vert_color);
     createVertexIndex(vert_index);
-
+    generateIdx();
+    generatePos();
+    generateCol();
+    BuildBuffer();
+}
+void Screen_Triangles::BuildBuffer()
+{
     count = index_num;
 
     // Create a VBO on our GPU and store its handle in bufIdx
@@ -91,5 +94,3 @@ void Screen_Triangles::create()
 
 
 }
-
-
