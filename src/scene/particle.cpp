@@ -9,13 +9,13 @@ Particle::Particle(GLWidget277* context)
 
 void Particle::create()
 {
-    count = 100;
+    count = 5000;
 
-    glm::vec4 pos[100];
+    glm::vec4 pos[5000];
 
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 5000; i++)
     {
-        float height = rand() % 200 / 10.f + 60;
+        float height = rand() % 2000 / 10.f + 5;
         float x = rand() % 200 - 150;
         float z = rand() % 200 - 150;
         pos[i] = glm::vec4(x, height, z, 1.0f);

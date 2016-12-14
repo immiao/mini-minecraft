@@ -9,7 +9,7 @@ void main()
 {
     vec3 f = normalize(u_cameraPos - gl_in[0].gl_Position.xyz);
     vec3 up = vec3(0, 1, 0);
-    vec3 right = cross(f, up);
+    vec3 right = cross(f, up) * 0.1;
     vec3 top = cross(right, f);
 
     gl_Position = u_ViewProj * vec4(gl_in[0].gl_Position.xyz - top + right, 1.0);

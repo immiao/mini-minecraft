@@ -11,6 +11,11 @@
 #include<scene/riversystem.h>
 #include <scene/screen_center.h>
 #include <scene/screen_triangles.h>
+#include<scene/fireblocks.h>
+#include<scene/digit.h>
+#include<scene/itemlist.h>
+#include<QSound>
+#include <QSoundEffect>
 #include <chunk.h>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
@@ -19,7 +24,9 @@
 
 #define BODYEDGE_ERROR 0.05f
 #define BLOCKEDGE_ERROR 0.02f
-const float gravity_acceleration=-0.98f;
+#define PICKMODE 0
+#define COLLECTMODE 1
+const float gravity_acceleration=-1.5f;
 const float time_step=1.0f/15.0f;
 class MyGL
     : public GLWidget277
@@ -45,6 +52,23 @@ private:
     Screen_Center center;
     Screen_Triangles T;
 
+    //ItemList
+    std::vector<ItemList*> ItemMenu;
+    std::vector<ItemList*> Item;
+    std::vector<ItemList*> ItemNumber;
+    //Special blocks
+    std::vector<glm::vec3> waterblocks;
+    std::vector<Fire> Fireblocks;
+
+    //Sound
+    QSound StepSound;
+    QSound WaterStepSound;
+    QSound Ground;
+    QSound WaterGround;
+    QSoundEffect RiverSound;
+    QSoundEffect FireSound;
+
+
     // skybox
     Skybox skybox;
     Camera gl_skyboxCamera;
@@ -53,7 +77,15 @@ private:
     /// Timer linked to timerUpdate(). Fires approx. 60 times per second
     QTimer timer;
 
+
     glm::vec3 character_size;//used to define the size of character on the 3 directions
+    BLOCK_TYPE Step_type;
+    BLOCK_TYPE block_type;
+    BLOCK_TYPE block_type_Origin;
+
+    Digit Resource_Digit_Num[15];
+    int Resource_Num[15];
+    int Fetch_Mode;
 
     bool game_begin;
     bool mousemove;
@@ -64,6 +96,7 @@ private:
     float g_velocity;
 
     int timeCount = 0;
+    int Firecount=0;
     int Daytime = 0;
     int OpenDNcycle = 0;
 
@@ -82,16 +115,21 @@ public:
     void UpdateWhenNewTerrain(std::map<tuple, Block *> &New_map);
 
 
-    void breakblocks(QPoint screen_pos,int distance_max);
-    void addblocks(QPoint screen_pos,int distance_max);
+    void breakblocks(QPoint screen_pos,int distance_max,int Mode);
+    void addblocks(QPoint screen_pos,int distance_max,BLOCK_TYPE type);
 
+    void CurrentItemChange();
+    void FireSpread();
+    void playvoice();
     void Keyevents();
 
     bool boundarytest();
     bool collision_test(int direction,float step);
     bool bottom_test();
 
-    void test();
+    double WaterDistanceClose();
+    double FireDistanceClose();
+
 
 protected:
     void keyPressEvent(QKeyEvent *e);

@@ -23,7 +23,11 @@ SOURCES += \
     $$PWD/scene/riversystem.cpp \
     $$PWD/direction.cpp \
     $$PWD/scene/skybox.cpp \
+    $$PWD/scene/fireblocks.cpp \
+    $$PWD/scene/itemlist.cpp \
+    $$PWD/scene/digit.cpp\
     $$PWD/scene/particle.cpp
+
 HEADERS += \
     $$PWD/la.h \
     $$PWD/mainwindow.h \
@@ -44,4 +48,7 @@ HEADERS += \
     $$PWD/scene/riversystem.h \
     $$PWD/direction.h \
     $$PWD/scene/skybox.h \
+    $$PWD/scene/fireblocks.h \
+    $$PWD/scene/itemlist.h \
+    $$PWD/scene/digit.h \ 
     $$PWD/scene/particle.h

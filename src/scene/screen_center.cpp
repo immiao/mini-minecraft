@@ -67,18 +67,20 @@ void Screen_Center::InitializeScreenSize(int w,int h)
 
 void Screen_Center::create()
 {
-    std::vector<glm::vec4> vert_pos;
-    std::vector<glm::vec4> vert_color;
-    std::vector<GLuint> vert_index;
-
     createScreenCenter(vert_pos,width,height);
     createScreenCenterColor(vert_color);
     createScreenCenterIndex(vert_index);
-
+    generateIdx();
+    generatePos();
+    generateCol();
+    BuildBuffer();
+}
+void Screen_Center::BuildBuffer()
+{
     count = index_num;
 
     // Create a VBO on our GPU and store its handle in bufIdx
-    generateIdx();
+
     // Tell OpenGL that we want to perform subsequent operations on the VBO referred to by bufIdx
     // and that it will be treated as an element array buffer (since it will contain triangle indices)
     context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdx);
@@ -88,11 +90,10 @@ void Screen_Center::create()
 
     // The next few sets of function calls are basically the same as above, except bufPos and bufNor are
     // array buffers rather than element array buffers, as they store vertex attributes like position.
-    generatePos();
+
     context->glBindBuffer(GL_ARRAY_BUFFER, bufPos);
     context->glBufferData(GL_ARRAY_BUFFER, vertex_num * sizeof(glm::vec4), vert_pos.data(), GL_STATIC_DRAW);
 
-    generateCol();
     context->glBindBuffer(GL_ARRAY_BUFFER, bufCol);
     context->glBufferData(GL_ARRAY_BUFFER, vertex_num * sizeof(glm::vec4),vert_color.data(), GL_STATIC_DRAW);
 

@@ -12,6 +12,7 @@ class RiverSystem
 {
 private:
     Scene* scene;
+    std::vector<glm::vec3> waterblocks;
 public:
     RiverSystem(Scene* s);
     ~RiverSystem();
@@ -22,7 +23,7 @@ public:
     void CarveBank(std::vector<glm::vec3> unit_width, int river_direction);
     void CarveBankOrigin(std::vector<glm::vec3> origin,int riverdirection);
     void CarveBankTerminal(std::vector<glm::vec3> terminal,int riverdirection);
-    void SpliteBranch(glm::vec3 origin,int width,int length, int direction);
+    std::vector<glm::vec3> GetRiverBlocks();
 };
 
 
