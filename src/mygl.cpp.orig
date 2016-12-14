@@ -16,13 +16,20 @@ const int MaxReachDistance=8;
 MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
       gl_camera(), gl_skyboxCamera(), geom_cube(this),Rivers(&scene),center(this),T(this),
+<<<<<<< HEAD
       prog_lambert(this), prog_flat(this), prog_new(this), prog_shadow(this),prog_skybox(this), prog_particle(this), rainParticle(this),
+      grid(this),mousemove(false),game_begin(false),jump_state(false),
+      g_velocity(0),external_force_acceleration(-gravity_acceleration),
+      character_size(0,0,0), skybox(this)
+=======
+      prog_lambert(this), prog_flat(this), prog_new(this), prog_shadow(this),prog_skybox(this),
       grid(this),mousemove(false),game_begin(false),jump_state(false),block_type(DIRT),block_type_Origin(DIRT),
       Step_type(DIRT),Fetch_Mode(PICKMODE),g_velocity(0),external_force_acceleration(-gravity_acceleration),
       character_size(0,0,0),StepSound("../miniminecraft/sound/step2.wav"),
       WaterStepSound("../miniminecraft/sound/stepwater.wav"),
       Ground("../miniminecraft/sound/ground.wav"),WaterGround("../miniminecraft/sound/waterground.wav"),
       RiverSound(NULL),FireSound(NULL),skybox(this)
+>>>>>>> f825136510bd641bd9aea5ccf550352c4e4e1c8e
 {
     ItemMenu.resize(12);
     Item.resize(12);
@@ -284,7 +291,6 @@ void MyGL::paintGL()
     Item[8]->SetTexture(LAVA,1);
     prog_flat.draw(*(Item[8]));
 
-
     prog_flat.setFlatTexture(2);
     for(int i=0;i<9;i++)
     {
@@ -301,13 +307,16 @@ void MyGL::paintGL()
         prog_flat.draw(*(ItemNumber[2*i]));
         prog_flat.draw(*(ItemNumber[2*i+1]));
     }
-    glEnable(GL_DEPTH_TEST);    prog_flat.deleteTexture(prog_shadow.depthMap);
+    glEnable(GL_DEPTH_TEST);
+
+    prog_flat.deleteTexture(prog_shadow.depthMap);
     prog_flat.setViewProjMatrix(glm::mat4(1));
 
-
+    glEnable(GL_DEPTH_TEST);
     prog_particle.setViewProjMatrix(gl_camera.getViewProj());
     prog_particle.setCameraPos(gl_camera.eye, fTime);
     prog_particle.drawParticle(rainParticle);
+
 }
 
 void MyGL::GLDrawScene()
@@ -1204,9 +1213,6 @@ void MyGL::timerUpdate()
         return;
 
     fTime += 1 / 60.f;
-    if (fTime > 4)
-        fTime = 0;
-    //printf("%f\n", fTime);
     //20 seconds a Day, 10 second, 1 second = 62.5timecount
     Daytime = (++Daytime)%1250;
     timeCount = (++timeCount) % 150;

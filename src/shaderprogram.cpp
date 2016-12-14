@@ -101,6 +101,73 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     initSkyBox();
 }
 
+void ShaderProgram::create(const char *vertfile, const char *geomfile, const char* fragfile)
+{
+    // Allocate space on our GPU for a vertex shader and a fragment shader and a shader program to manage the two
+    vertShader = context->glCreateShader(GL_VERTEX_SHADER);
+    fragShader = context->glCreateShader(GL_FRAGMENT_SHADER);
+    geomShader = context->glCreateShader(GL_GEOMETRY_SHADER);
+
+    prog = context->glCreateProgram();
+    // Get the body of text stored in our two .glsl files
+    QString qVertSource = qTextFileRead(vertfile);
+    QString qFragSource = qTextFileRead(fragfile);
+    QString qGeomSource = qTextFileRead(geomfile);
+
+    char* vertSource = new char[qVertSource.size()+1];
+    strcpy(vertSource, qVertSource.toStdString().c_str());
+    char* fragSource = new char[qFragSource.size()+1];
+    strcpy(fragSource, qFragSource.toStdString().c_str());
+    char* geomSource = new char[qGeomSource.size()+1];
+    strcpy(geomSource, qGeomSource.toStdString().c_str());
+
+    // Send the shader text to OpenGL and store it in the shaders specified by the handles vertShader and fragShader
+    context->glShaderSource(vertShader, 1, &vertSource, 0);
+    context->glShaderSource(fragShader, 1, &fragSource, 0);
+    context->glShaderSource(geomShader, 1, &geomSource, 0);
+    // Tell OpenGL to compile the shader text stored above
+    context->glCompileShader(vertShader);
+    context->glCompileShader(fragShader);
+    context->glCompileShader(geomShader);
+    // Check if everything compiled OK
+    GLint compiled;
+    context->glGetShaderiv(vertShader, GL_COMPILE_STATUS, &compiled);
+    if (!compiled) {
+        printShaderInfoLog(vertShader);
+    }
+    context->glGetShaderiv(fragShader, GL_COMPILE_STATUS, &compiled);
+    if (!compiled) {
+        printShaderInfoLog(fragShader);
+    }
+    context->glGetShaderiv(geomShader, GL_COMPILE_STATUS, &compiled);
+    if (!compiled) {
+        printShaderInfoLog(geomShader);
+    }
+
+    // Tell prog that it manages these particular vertex and fragment shaders
+    context->glAttachShader(prog, vertShader);
+    context->glAttachShader(prog, fragShader);
+    context->glAttachShader(prog, geomShader);
+    context->glLinkProgram(prog);
+
+    // Check for linking success
+    GLint linked;
+    context->glGetProgramiv(prog, GL_LINK_STATUS, &linked);
+    if (!linked) {
+        printLinkInfoLog(prog);
+    }
+
+//    const char* varyings[1] = { "oPos" };
+
+//    context->glTransformFeedbackVaryings(prog, 1, varyings, GL_INTERLEAVED_ATTRIBS);
+
+    attrPos = context->glGetAttribLocation(prog, "vs_Pos");
+    unifViewProj   = context->glGetUniformLocation(prog, "u_ViewProj");
+    unifCameraPos  = context->glGetUniformLocation(prog, "u_cameraPos");
+    unifTime       = context->glGetUniformLocation(prog, "u_Time");
+    //printf("%d\n", unifCameraPos);
+}
+
 void ShaderProgram::useMe()
 {
     context->glUseProgram(prog);
@@ -224,6 +291,38 @@ void ShaderProgram::draw(Drawable &d)
     if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
     if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
     if (attrUv != -1) context->glDisableVertexAttribArray(attrUv);
+
+    context->printGLErrorLog();
+}
+
+void ShaderProgram::drawParticle(Particle &d)
+{
+    useMe();
+
+    if (attrPos != -1)
+    {
+
+
+        context->glBindBuffer(GL_ARRAY_BUFFER, d.bufPos);
+
+        context->glEnableVertexAttribArray(attrPos);
+        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 0, NULL);
+    }
+
+   // context->glPointSize(10);
+    //context->glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, d.bufPos[1]);
+    //context->glBeginTransformFeedback(GL_TRIANGLE_STRIP);
+    context->glDrawArrays(GL_POINTS, 0, d.count);
+    //printf("%d\n", d.count);
+    //context->glEndTransformFeedback();
+
+    if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
+
+//    context->glBindBuffer(GL_ARRAY_BUFFER, d.bufPos[1]);
+//    float *data = (float*)context->glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
+//    printf("%f %f %f %f\n", data[0], data[1], data[2], data[3]);
+//    context->glUnmapBuffer(GL_ARRAY_BUFFER);
+//    context->glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     context->printGLErrorLog();
 }
@@ -555,4 +654,11 @@ void ShaderProgram::setSkyColorFactor(float factor)
 {
     useMe();
     context->glUniform1f(unifSkyColorFactor, factor);
+}
+
+void ShaderProgram::setCameraPos(glm::vec3 pos, float t)
+{
+    useMe();
+    context->glUniform3fv(unifCameraPos, 1, &pos[0]);
+    context->glUniform1f(unifTime, t);
 }

@@ -20,6 +20,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
 #include <scene/skybox.h>
+#include <scene/particle.h>
 
 #define BODYEDGE_ERROR 0.05f
 #define BLOCKEDGE_ERROR 0.02f
@@ -38,6 +39,9 @@ private:
     ShaderProgram prog_shadow;
 
     ShaderProgram prog_skybox;
+    ShaderProgram prog_particle;
+    Particle rainParticle;
+
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
                 // Don't worry too much about this. Just know it is necessary in order to render geometry.
 
@@ -95,6 +99,9 @@ private:
     int Firecount=0;
     int Daytime = 0;
     int OpenDNcycle = 0;
+
+    float fTime = 0.f;
+
 public:
     explicit MyGL(QWidget *parent = 0);
     ~MyGL();

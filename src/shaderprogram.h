@@ -6,13 +6,14 @@
 #include <glm/glm.hpp>
 
 #include "drawable.h"
-
+#include <scene/particle.h>
 
 class ShaderProgram
 {
 public:
     GLuint vertShader; // A handle for the vertex shader stored in this shader program
     GLuint fragShader; // A handle for the fragment shader stored in this shader program
+    GLuint geomShader;
     GLuint prog;       // A handle for the linked shader program stored in this class
 
     int attrPos; // A handle for the "in" vec4 representing vertex position in the vertex shader
@@ -64,10 +65,15 @@ public:
     int unifSkyboxTexture;
     int unifSkyColorFactor;
 
+    // particle
+    int unifCameraPos;
+
 public:
     ShaderProgram(GLWidget277* context);
     // Sets up the requisite GL data and shaders from the given .glsl files
     void create(const char *vertfile, const char *fragfile);
+    void create(const char *vertfile, const char *geomfile, const char* fragfile);
+
     // Tells our OpenGL context to use this shader to draw things
     void useMe();
     // Pass the given model matrix to this shader on the GPU
@@ -80,6 +86,7 @@ public:
     void setViewPos(glm::vec3 pos);
     // Draw the given object to our screen using this ShaderProgram's shaders
     void draw(Drawable &d);
+    void drawParticle(Particle &d);
     // Utility function used in create()
     char* textFileRead(const char*);
     // Utility function that prints any shader compilation errors to the console
@@ -102,9 +109,13 @@ public:
     void setDNcycle(int OpenDNcycle);
     QString qTextFileRead(const char*);
 
+    // skybox
     void initSkyBox();
     void setSkyboxTexture();
     void setSkyColorFactor(float factor);
+
+    // particle
+    void setCameraPos(glm::vec3 pos, float t);
 
 public:
     GLWidget277* context;   // Since Qt's OpenGL support is done through classes like QOpenGLFunctions_3_2_Core,
