@@ -185,6 +185,10 @@ void MyGL::paintGL()
 
     prog_flat.setModelMatrix(glm::mat4(1));
 
+    glDisable(GL_DEPTH_TEST);
+    prog_flat.draw(center);
+    prog_flat.draw(T);    prog_flat.setViewProjMatrix(glm::mat4(1));
+
 
 
 }
