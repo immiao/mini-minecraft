@@ -7,7 +7,7 @@ class Particle
 {
 public:
     int count;
-    GLuint bufPos;
+    GLuint bufPos[2];
     GLWidget277* context;
     Particle(GLWidget277* context);
     void create();

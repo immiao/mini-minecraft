@@ -196,7 +196,7 @@ void MyGL::paintGL()
 
     prog_particle.setViewProjMatrix(gl_camera.getViewProj());
     prog_particle.setCameraPos(gl_camera.eye);
-    //prog_particle.drawParticle(rainParticle);
+    prog_particle.drawParticle(rainParticle);
 
 }
 

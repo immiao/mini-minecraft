@@ -150,6 +150,11 @@ void ShaderProgram::create(const char *vertfile, const char *geomfile, const cha
         printLinkInfoLog(prog);
     }
 
+//    const char* varyings[1] = { "oPos" };
+
+//    context->glTransformFeedbackVaryings(prog, 1, varyings, GL_INTERLEAVED_ATTRIBS);
+
+    attrPos = context->glGetAttribLocation(prog, "vs_Pos");
     unifViewProj   = context->glGetUniformLocation(prog, "u_ViewProj");
     unifCameraPos  = context->glGetUniformLocation(prog, "u_cameraPos");
 
@@ -275,14 +280,26 @@ void ShaderProgram::drawParticle(Particle &d)
 
     if (attrPos != -1)
     {
-        context->glBindBuffer(GL_ARRAY_BUFFER, d.bufPos);
+        //context->glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, d.bufPos[1]);
+
+        context->glBindBuffer(GL_ARRAY_BUFFER, d.bufPos[0]);
+
         context->glEnableVertexAttribArray(attrPos);
         context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 0, NULL);
     }
 
+   // context->glPointSize(10);
+    //context->glBeginTransformFeedback(GL_POINTS);
     context->glDrawElements(GL_POINTS, d.count, GL_UNSIGNED_INT, 0);
+    //context->glEndTransformFeedback();
 
     if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
+
+//    context->glBindBuffer(GL_ARRAY_BUFFER, d.bufPos[1]);
+//    float *data = (float*)context->glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
+//    printf("%f %f %f %f\n", data[0], data[1], data[2], data[3]);
+//    context->glUnmapBuffer(GL_ARRAY_BUFFER);
+//    context->glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     context->printGLErrorLog();
 }
