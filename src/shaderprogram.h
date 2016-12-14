@@ -57,6 +57,7 @@ public:
     int h0,h1,h2,h3,h4,h5;
     GLuint m_skyboxTexture;
     int unifSkyboxTexture;
+    int unifSkyColorFactor;
 
 public:
     ShaderProgram(GLWidget277* context);
@@ -89,12 +90,13 @@ public:
     //Shadow mapping
     void setShadowTexture();
     void setShadowBias_PVmatrix(int Daytime);
-    void ComputeLightPVMatrix(int Daytime);
+    float ComputeLightPVMatrix(int Daytime);
     void setDNcycle(int OpenDNcycle);
     QString qTextFileRead(const char*);
 
     void initSkyBox();
     void setSkyboxTexture();
+    void setSkyColorFactor(float factor);
 
 public:
     GLWidget277* context;   // Since Qt's OpenGL support is done through classes like QOpenGLFunctions_3_2_Core,

@@ -376,7 +376,7 @@ void ShaderProgram::setShadowBias_PVmatrix(int Daytime){
         context->glUniform1i(unifDaytime, Daytime);
 }
 
-void ShaderProgram::ComputeLightPVMatrix(int Daytime){
+float ShaderProgram::ComputeLightPVMatrix(int Daytime){
     //    The MVP matrix used to render the scene from the light’s point of view is computed as follows :
 
     //    The Projection matrix is an orthographic matrix which will encompass everything in the axis-aligned box (-10,10),(-10,10),(-10,20) on the X,Y and Z axes respectively. These values are made so that our entire *visible *scene is always visible ; more on this in the Going Further section.
@@ -385,7 +385,7 @@ void ShaderProgram::ComputeLightPVMatrix(int Daytime){
         GLfloat near_plane = 50.0f, far_plane = 200.0f;
         GLfloat width = 100.0f;
         glm::mat4 lightProjection = glm::ortho(-width, width, -width, width, near_plane, far_plane);
-
+        float result;
         if(Daytime < 625){
             //Day to Night:
             //set the skycolor
@@ -403,6 +403,8 @@ void ShaderProgram::ComputeLightPVMatrix(int Daytime){
                                               glm::vec3( -100.0f, 0.0f,  -100.0f),
                                               glm::vec3( 0.0f, 1.0f,  0.0f));
             lightSpaceMatrix = lightProjection * lightView;
+
+            result = sky_color.z;
         }
         else{
             //Night to Day
@@ -420,7 +422,11 @@ void ShaderProgram::ComputeLightPVMatrix(int Daytime){
                                               glm::vec3( -100.0f, 0.0f,  -100.0f),
                                               glm::vec3( 0.0f, 1.0f,  0.0f));
             lightSpaceMatrix = lightProjection * lightView;
+
+            result = sky_color.z;
         }
+
+        return result;
 }
 
 void ShaderProgram::setDNcycle(int OpenDNcycle){
@@ -433,6 +439,8 @@ void ShaderProgram::initSkyBox()
 
     if (unifSkyboxTexture == -1)
         return;
+
+    unifSkyColorFactor = context->glGetUniformLocation(prog, "gSkyColorFactor");
 
     up = SOIL_load_image("../miniminecraft/minecraft_textures_all/up6.JPG",
                                                &w0, &h0, 0, SOIL_LOAD_RGB);
@@ -477,7 +485,14 @@ void ShaderProgram::initSkyBox()
 
 void ShaderProgram::setSkyboxTexture()
 {
+    useMe();
     context->glActiveTexture(GL_TEXTURE0);
     context->glBindTexture(GL_TEXTURE_CUBE_MAP, m_skyboxTexture);
     context->glUniform1i(unifSkyboxTexture, 0);
+}
+
+void ShaderProgram::setSkyColorFactor(float factor)
+{
+    useMe();
+    context->glUniform1f(unifSkyColorFactor, factor);
 }

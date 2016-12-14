@@ -153,25 +153,28 @@ void MyGL::paintGL()
     prog_new.context->glBindFramebuffer(GL_FRAMEBUFFER, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glDisable(GL_DEPTH_TEST);
-    prog_skybox.setViewProjMatrix(gl_skyboxCamera.getViewProj());
-    prog_skybox.setSkyboxTexture();
-    prog_skybox.draw(skybox);
-    glEnable(GL_DEPTH_TEST);
-
     prog_new.setViewProjMatrix(gl_camera.getViewProj());
     prog_new.setViewPos(gl_camera.eye);
     prog_new.setTexture(prog_shadow.depthMap);
     //Open DNcycle or not
+    float skyColorFactor = 1.f;
     if(OpenDNcycle == 1){
         prog_new.setDNcycle(OpenDNcycle);
-        prog_new.ComputeLightPVMatrix(Daytime);
+        skyColorFactor = prog_new.ComputeLightPVMatrix(Daytime);
     }
     else{
         prog_new.setDNcycle(OpenDNcycle);
         prog_new.ComputeLightPVMatrix(0);
     }
     prog_new.setShadowBias_PVmatrix(Daytime);
+
+    glDisable(GL_DEPTH_TEST);
+    prog_skybox.setSkyColorFactor(skyColorFactor);
+    prog_skybox.setViewProjMatrix(gl_skyboxCamera.getViewProj());
+    prog_skybox.setSkyboxTexture();
+    prog_skybox.draw(skybox);
+    glEnable(GL_DEPTH_TEST);
+
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
     grid.render(prog_new, gl_camera.getViewProj(), true);
