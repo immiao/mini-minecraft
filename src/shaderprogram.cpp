@@ -149,6 +149,9 @@ void ShaderProgram::create(const char *vertfile, const char *geomfile, const cha
     if (!linked) {
         printLinkInfoLog(prog);
     }
+
+    unifViewProj   = context->glGetUniformLocation(prog, "u_ViewProj");
+    unifCameraPos  = context->glGetUniformLocation(prog, "u_cameraPos");
 }
 
 void ShaderProgram::useMe()
@@ -570,4 +573,10 @@ void ShaderProgram::setSkyColorFactor(float factor)
 {
     useMe();
     context->glUniform1f(unifSkyColorFactor, factor);
+}
+
+void ShaderProgram::setCameraPos(glm::vec3 pos)
+{
+    useMe();
+    context->glUniform3fv(unifCameraPos, 3, &pos[0]);
 }

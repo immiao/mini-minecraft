@@ -194,7 +194,8 @@ void MyGL::paintGL()
     prog_flat.draw(center);
     prog_flat.draw(T);    prog_flat.setViewProjMatrix(glm::mat4(1));
 
-
+    prog_particle.setViewProjMatrix(gl_camera.getViewProj());
+    prog_particle.setCameraPos(gl_camera.eye);
     //prog_particle.drawParticle(rainParticle);
 
 }

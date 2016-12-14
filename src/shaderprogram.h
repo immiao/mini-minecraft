@@ -60,6 +60,9 @@ public:
     int unifSkyboxTexture;
     int unifSkyColorFactor;
 
+    // particle
+    int unifCameraPos;
+
 public:
     ShaderProgram(GLWidget277* context);
     // Sets up the requisite GL data and shaders from the given .glsl files
@@ -98,9 +101,13 @@ public:
     void setDNcycle(int OpenDNcycle);
     QString qTextFileRead(const char*);
 
+    // skybox
     void initSkyBox();
     void setSkyboxTexture();
     void setSkyColorFactor(float factor);
+
+    // particle
+    void setCameraPos(glm::vec3 pos);
 
 public:
     GLWidget277* context;   // Since Qt's OpenGL support is done through classes like QOpenGLFunctions_3_2_Core,
