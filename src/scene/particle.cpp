@@ -12,7 +12,7 @@ void Particle::create()
 
     const float pos[] =
     {
-        0.f, 0.f, 0.f, 1.f
+        10.f, 10.f, 10.f, 1.f
     };
 
     context->glGenBuffers(1, &bufPos);
