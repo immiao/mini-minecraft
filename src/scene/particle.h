@@ -1,7 +1,7 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
-#include <mygl.h>
+#include <glwidget277.h>
 
 class Particle
 {
@@ -10,6 +10,7 @@ public:
     GLuint bufPos;
     GLWidget277* context;
     Particle(GLWidget277* context);
+    void create();
 };
 
 #endif // PARTICLE_H

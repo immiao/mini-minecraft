@@ -264,6 +264,24 @@ void ShaderProgram::draw(Drawable &d)
     context->printGLErrorLog();
 }
 
+void ShaderProgram::drawParticle(Particle &d)
+{
+    useMe();
+
+    if (attrPos != -1)
+    {
+        context->glBindBuffer(GL_ARRAY_BUFFER, d.bufPos);
+        context->glEnableVertexAttribArray(attrPos);
+        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 0, NULL);
+    }
+
+    context->glDrawElements(GL_POINTS, d.count, GL_UNSIGNED_INT, 0);
+
+    if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
+
+    context->printGLErrorLog();
+}
+
 char* ShaderProgram::textFileRead(const char* fileName) {
     char* text;
 

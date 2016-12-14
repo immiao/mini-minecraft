@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 
 #include "drawable.h"
-
+#include <scene/particle.h>
 
 class ShaderProgram
 {
@@ -78,6 +78,7 @@ public:
     void setViewPos(glm::vec3 pos);
     // Draw the given object to our screen using this ShaderProgram's shaders
     void draw(Drawable &d);
+    void drawParticle(Particle &d);
     // Utility function used in create()
     char* textFileRead(const char*);
     // Utility function that prints any shader compilation errors to the console

@@ -16,7 +16,7 @@ const int MaxReachDistance=8;
 MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent),
       gl_camera(), gl_skyboxCamera(), geom_cube(this),Rivers(&scene),center(this),T(this),
-      prog_lambert(this), prog_flat(this), prog_new(this), prog_shadow(this),prog_skybox(this), prog_particle(this),
+      prog_lambert(this), prog_flat(this), prog_new(this), prog_shadow(this),prog_skybox(this), prog_particle(this), rainParticle(this),
       grid(this),mousemove(false),game_begin(false),jump_state(false),
       g_velocity(0),external_force_acceleration(-gravity_acceleration),
       character_size(0,0,0), skybox(this)
@@ -106,6 +106,8 @@ void MyGL::initializeGL()
     initializeGrid();
 
     skybox.create();
+    rainParticle.create();
+
     game_begin = true;
 }
 
@@ -123,6 +125,7 @@ void MyGL::resizeGL(int w, int h)
 
     prog_lambert.setViewProjMatrix(viewproj);
     prog_flat.setViewProjMatrix(viewproj);
+    prog_particle.setViewProjMatrix(viewproj);
 
     prog_skybox.setViewProjMatrix(gl_skyboxCamera.getViewProj());
 
@@ -192,6 +195,7 @@ void MyGL::paintGL()
     prog_flat.draw(T);    prog_flat.setViewProjMatrix(glm::mat4(1));
 
 
+    //prog_particle.drawParticle(rainParticle);
 
 }
 
