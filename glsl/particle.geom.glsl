@@ -7,5 +7,8 @@ uniform vec3 u_cameraPos;
 
 void main()
 {
-
+    vec3 f = normalize(u_cameraPos - gl_in[0].gl_Position.xyz);
+    vec3 up = vec3(0, 1, 0);
+    vec3 right = cross(f, up);
+    vec3 top = cross(right, f);
 }
