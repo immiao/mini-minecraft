@@ -5,9 +5,9 @@
 
 in vec4 vs_Pos;
 
-uniform float time;
+uniform float u_Time;
 
 void main()
 {
-    gl_Position = vs_Pos;
+    gl_Position = vs_Pos - vec4(0, u_Time * 10, 0, 0);
 }

@@ -107,7 +107,7 @@ public:
     void setSkyColorFactor(float factor);
 
     // particle
-    void setCameraPos(glm::vec3 pos);
+    void setCameraPos(glm::vec3 pos, float t);
 
 public:
     GLWidget277* context;   // Since Qt's OpenGL support is done through classes like QOpenGLFunctions_3_2_Core,

@@ -157,7 +157,7 @@ void ShaderProgram::create(const char *vertfile, const char *geomfile, const cha
     attrPos = context->glGetAttribLocation(prog, "vs_Pos");
     unifViewProj   = context->glGetUniformLocation(prog, "u_ViewProj");
     unifCameraPos  = context->glGetUniformLocation(prog, "u_cameraPos");
-
+    unifTime       = context->glGetUniformLocation(prog, "u_Time");
     //printf("%d\n", unifCameraPos);
 }
 
@@ -596,8 +596,9 @@ void ShaderProgram::setSkyColorFactor(float factor)
     context->glUniform1f(unifSkyColorFactor, factor);
 }
 
-void ShaderProgram::setCameraPos(glm::vec3 pos)
+void ShaderProgram::setCameraPos(glm::vec3 pos, float t)
 {
     useMe();
     context->glUniform3fv(unifCameraPos, 1, &pos[0]);
+    context->glUniform1f(unifTime, t);
 }

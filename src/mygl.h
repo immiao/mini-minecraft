@@ -67,6 +67,7 @@ private:
     int Daytime = 0;
     int OpenDNcycle = 0;
 
+    float fTime = 0.f;
 
 public:
     explicit MyGL(QWidget *parent = 0);

@@ -194,8 +194,9 @@ void MyGL::paintGL()
     prog_flat.draw(center);
     prog_flat.draw(T);    prog_flat.setViewProjMatrix(glm::mat4(1));
 
+    glEnable(GL_DEPTH_TEST);
     prog_particle.setViewProjMatrix(gl_camera.getViewProj());
-    prog_particle.setCameraPos(gl_camera.eye);
+    prog_particle.setCameraPos(gl_camera.eye, fTime);
     prog_particle.drawParticle(rainParticle);
 
 }
@@ -781,6 +782,8 @@ void MyGL::timerUpdate()
 {
     if(!game_begin)
         return;
+
+    fTime += 1 / 60.f;
     //20 seconds a Day, 10 second, 1 second = 62.5timecount
     Daytime = (++Daytime)%1250;
     timeCount = (++timeCount) % 150;

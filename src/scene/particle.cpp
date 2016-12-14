@@ -19,7 +19,7 @@ void Particle::create()
         float x = rand() % 200 - 150;
         float z = rand() % 200 - 150;
         pos[i] = glm::vec4(x, height, z, 1.0f);
-        printf("%f %f %f\n",x ,height, z);
+        //printf("%f %f %f\n",x ,height, z);
     }
 
     context->glGenBuffers(1, &bufPos);
